@@ -57,7 +57,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "apps.accounts",
+    "apps.accounts.apps.AccountsConfig",
     "apps.chat",
     "apps.storage",
     "apps.workflows",
@@ -65,6 +65,7 @@ LOCAL_APPS = [
     "apps.audit",
     "apps.common",
     "apps.api",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
