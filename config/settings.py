@@ -75,6 +75,8 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # ------------------------------------------------------------------------------
 
 MIDDLEWARE = [
+    "apps.common.middleware.TimingMiddleware",  # <-- Tu nuevo middleware
+    "django_xbench.middleware.XBenchMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -175,6 +177,10 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # <-- Esto le dice a Django que busque en la carpeta 'static' de la raíz
+]
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -214,7 +220,93 @@ SIMPLE_JWT = {
 # LOGGING
 # ------------------------------------------------------------------------------
 
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'hollowcloud-cache',
+        'TIMEOUT': 300,  # 5 minutos por defecto
+        'OPTIONS': {
+            'MAX_ENTRIES': 10000,  # Máximo de entradas en caché
+        }
+    }
+}
+
+
+# ------------------------------------------------------------------------------
+# LOGGING
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# LOGGING (Configuración completa)
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# LOGGING (Configuración completa)
+# ------------------------------------------------------------------------------
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        # Logger para tu aplicación accounts (captura los logs de authenticate_user, etc.)
+        "apps.accounts": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # Logger para tu nuevo middleware de timing
+        "apps.common": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # Logger para errores internos de Django
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
 }
+
+# ============================================================
+# CONSTANTES DE CACHE Y RATE LIMITING
+# ============================================================
+
+# Cache negativa (usuarios que no existen)
+CACHE_NEGATIVE_TTL = 300  # 5 minutos
+CACHE_NEGATIVE_PREFIX = "user_not_found"
+
+# Cache positiva (usuarios autenticados)
+CACHE_POSITIVE_TTL = 3600  # 1 hora
+CACHE_POSITIVE_PREFIX = "user_authenticated"
+
+MAX_ATTEMPTS_IP = 10
+MAX_ATTEMPTS_EMAIL = 5
+RATE_LIMIT_WINDOW = 300  # 5 minutos
+TIMING_ATTACK_SLEEP = 0.1  # 100ms
+
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',     # ✅ Primero (más rápido y seguro)
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',     # Fallback
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher', # Fallback
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher', # Fallback
+]
+
+if DEBUG:
+    # Reducir iteraciones para desarrollo (más rápido)
+    from django.contrib.auth.hashers import Argon2PasswordHasher
+    Argon2PasswordHasher.time_cost = 2  # Reducir de 3 a 2 (más rápido)
+    Argon2PasswordHasher.memory_cost = 1024  # Reducir de 4096 a 1024 (menos memoria)
+else:
+    # En producción, mantener valores por defecto (seguros)
+    pass

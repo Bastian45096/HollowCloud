@@ -1,172 +1,214 @@
 from __future__ import annotations
 import logging
 from re import I
-from typing import Any
+from typing import Any, Optional, Dict
+from django.core.cache import cache
+
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
+import time
+import hashlib
+
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
-from apps.accounts.models import User
+from apps.accounts.models import User, Profile
 
 logger = logging.getLogger(__name__)
+
+
+# ============================================================
+# CONSTANTES DE CACHE Y RATE LIMITING
+# ============================================================
+
+CACHE_NEGATIVE_TTL = 300  # 5 minutos
+CACHE_NEGATIVE_PREFIX = "user_not_found"
+MAX_ATTEMPTS_IP = 10
+MAX_ATTEMPTS_EMAIL = 5
+RATE_LIMIT_WINDOW = 300  # 5 minutos
+TIMING_ATTACK_SLEEP = 0.1  # 100ms
+
+
+# ============================================================
+# FUNCIONES AUXILIARES DE CACHE (dentro de services.py)
+# ============================================================
+
+def _get_negative_cache_key(email: str) -> str:
+    """Clave para cache negativa (usuario no existe)"""
+    return f"{CACHE_NEGATIVE_PREFIX}:{email.lower()}"
+
+
+def _is_user_blocked(email: str) -> bool:
+    """Verificar si el email está bloqueado por cache negativa"""
+    cache_key = _get_negative_cache_key(email)
+    return cache.get(cache_key, False)
+
+
+def _block_user(email: str) -> None:
+    """Bloquear email en cache negativa (usuario no existe)"""
+    cache_key = _get_negative_cache_key(email)
+    cache.set(cache_key, True, CACHE_NEGATIVE_TTL)
+
+
+def _unblock_user(email: str) -> None:
+    """Desbloquear email de cache negativa"""
+    cache_key = _get_negative_cache_key(email)
+    cache.delete(cache_key)
+
+
+def _get_rate_limit_key_ip(request) -> str:
+    """Clave de rate limiting por IP"""
+    x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
+    ip = x_forwarded.split(',')[0].strip() if x_forwarded else request.META.get('REMOTE_ADDR')
+    ip = ip or 'unknown_ip'
+    return f"login_attempts_ip:{ip}"
+
+
+def _get_rate_limit_key_email(email: str) -> str:
+    """Clave de rate limiting por email"""
+    return f"login_attempts_email:{email.lower()}"
+
+
+def _check_rate_limit(key: str, max_attempts: int, window: int = RATE_LIMIT_WINDOW) -> bool:
+    """Verificar si se excedió el límite de intentos"""
+    attempts = cache.get(key, 0)
+    if attempts >= max_attempts:
+        return False
+    return True
+
+
+def _increment_rate_limit(key: str, window: int = RATE_LIMIT_WINDOW) -> None:
+    """Incrementar el contador de intentos"""
+    attempts = cache.get(key, 0)
+    cache.set(key, attempts + 1, window)
+
+
+def _reset_rate_limit(key: str) -> None:
+    """Resetear el contador de intentos"""
+    cache.delete(key)
+
+
+def _get_cached_user(email: str) -> Optional[User]:
+    """Obtener usuario de cache positiva (1 hora)"""
+    cache_key = f"user_authenticated:{email.lower()}"
+    user_id = cache.get(cache_key)
+    
+    if user_id:
+        try:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            cache.delete(cache_key)
+            return None
+    return None
+
+
+def _set_cached_user(user: User) -> None:
+    """Guardar usuario en cache positiva (1 hora)"""
+    cache_key = f"user_authenticated:{user.email.lower()}"
+    cache.set(cache_key, user.id, 3600)  # 1 hora
+
+
+def _check_account_status(user: User) -> None:
+    """Verificar el estado de la cuenta del usuario"""
+    if not user.is_active:
+        logger.warning(f"[Account] Cuenta inactiva: {user.email}")
+        raise ValidationError("Tu cuenta ha sido desactivada. Contacta a soporte.")
+    
+    if not user.is_verified:
+        logger.warning(f"[Account] Cuenta no verificada: {user.email}")
+        raise ValidationError("Tu cuenta no está verificada. Revisa tu email.")
 
 
 def generate_tokens(user: User) -> dict[str, str]:
     """
     Genera un par de tokens JWT para un usuario autenticado.
-
-    Retorna:
-    - access token: utilizado para acceder a los recursos protegidos.
-    - refresh token: utilizado para solicitar nuevos access tokens
-      sin necesidad de volver a iniciar sesión.
     """
-
-    logger.info(
-        "[POST Generar Tokens] Iniciando generación de tokens para user_id=%s",
-        user.id,
-    )
-
-    # SimpleJWT utiliza el refresh token como token principal.
-    # A partir de este objeto también se genera automáticamente
-    # el access token asociado al usuario.
+    start = time.time()
+    logger.info(f"[GenerateTokens] Iniciando generación de tokens para user_id={user.id}")
+    
+    # Tiempo 1: Crear refresh token
+    t1 = time.time()
     refresh = RefreshToken.for_user(user)
-
-    logger.debug(
-        "[POST Generar Tokens] Refresh token generado correctamente para user_id=%s",
-        user.id,
-    )
-
-    # Se retornan ambos tokens porque el cliente necesitará:
-    # - access: para autenticarse en las solicitudes.
-    # - refresh: para renovar la sesión cuando el access expire.
+    logger.info(f"[GenerateTokens] Refresh token creado en {(t1 - start)*1000:.2f}ms")
+    
+    # Tiempo 2: Obtener access token
+    t2 = time.time()
+    access = str(refresh.access_token)
+    logger.info(f"[GenerateTokens] Access token generado en {(t2 - t1)*1000:.2f}ms")
+    
+    # Tiempo 3: Obtener refresh token como string
+    t3 = time.time()
+    refresh_str = str(refresh)
+    logger.info(f"[GenerateTokens] Refresh token convertido en {(t3 - t2)*1000:.2f}ms")
+    
     tokens = {
-        "access": str(refresh.access_token),
-        "refresh": str(refresh),
+        "access": access,
+        "refresh": refresh_str,
     }
-
-    logger.info(
-        "[POST Generar Tokens] Tokens generados exitosamente para user_id=%s",
-        user.id,
-    )
-
+    
+    total = (time.time() - start) * 1000
+    logger.info(f"[GenerateTokens] Tokens generados exitosamente en {total:.2f}ms total")
+    
     return tokens
 
 @transaction.atomic
-def create_user(*, email: str, username: str, password: str, first_name: str, last_name: str,) -> User:
+def create_user(
+    *,
+    email: str,
+    username: str,
+    password: str,
+    first_name: str = '',
+    last_name: str = '',
+    bio: str = '',
+    avatar: Any = None,  
+) -> User:
     """
     Crear un nuevo usuario dentro de la plataforma.
-
-    Responsabilidades:
-    - Normalizar datos de entrada.
-    - Validar campos obligatorios.
-    - Garantizar unicidad de email y username.
-    - Validar contraseña según las reglas configuradas en Django.
-    - Crear el usuario de forma atómica.
     """
-
     logger.info(
         "[POST Crear Usuario] Solicitud recibida email=%s username=%s",
         email,
         username,
     )
 
-    # Normalizamos los datos para evitar diferencias por espacios
-    # o mayúsculas/minúsculas que puedan generar duplicados.
+    # Normalizamos los datos
     email = email.strip().lower()
     username = username.strip()
-    first_name = first_name.strip()
-    last_name = last_name.strip()
+    first_name = first_name.strip() if first_name else ''
+    last_name = last_name.strip() if last_name else ''
 
-    logger.debug(
-        "[POST Crear Usuario] Datos normalizados correctamente"
-    )
+    logger.debug("[POST Crear Usuario] Datos normalizados correctamente")
 
-    # Validamos primero los datos obligatorios.
-    # Es preferible fallar temprano antes de realizar consultas a la base de datos.
+    # Validaciones obligatorias
     if not email:
-        logger.warning(
-            "[POST Crear Usuario] Validación fallida: el email es obligatorio"
-        )
-        raise ValidationError(
-            "Email es requerido",
-        )
+        logger.warning("[POST Crear Usuario] Validación fallida: el email es obligatorio")
+        raise ValidationError("Email es requerido")
 
     if not username:
-        logger.warning(
-            "[POST Crear Usuario] Validación fallida: el nombre de usuario es obligatorio"
-        )
-        raise ValidationError(
-            "El nombre de usuario es requerido",
-        )
+        logger.warning("[POST Crear Usuario] Validación fallida: el nombre de usuario es obligatorio")
+        raise ValidationError("El nombre de usuario es requerido")
 
-    if not first_name:
-        logger.warning(
-            "[POST Crear Usuario] Validación fallida: el nombre es obligatorio"
-        )
-        raise ValidationError(
-            "First name es requerido",
-        )
-
-    if not last_name:
-        logger.warning(
-            "[POST Crear Usuario] Validación fallida: el apellido es obligatorio"
-        )
-        raise ValidationError(
-            "Last name es requerido",
-        )
-
-    logger.debug(
-        "[POST Crear Usuario] Verificando disponibilidad del email"
-    )
-
-    # El email debe ser único dentro de la plataforma.
-    # La validación temprana nos permite entregar un error de negocio entendible.
+    # Verificar unicidad
     if User.objects.filter(email=email).exists():
-        logger.warning(
-            "[POST Crear Usuario] El email ya se encuentra registrado email=%s",
-            email,
-        )
-        raise ValidationError(
-            "El email ya está en uso",
-        )
+        logger.warning("[POST Crear Usuario] El email ya se encuentra registrado email=%s", email)
+        raise ValidationError("El email ya está en uso")
 
-    logger.debug(
-        "[POST Crear Usuario] Verificando disponibilidad del nombre de usuario"
-    )
-
-    # El username también debe ser único.
-    # Esto evita conflictos de identidad dentro de la aplicación.
     if User.objects.filter(username=username).exists():
-        logger.warning(
-            "[POST Crear Usuario] El nombre de usuario ya se encuentra registrado username=%s",
-            username,
-        )
-        raise ValidationError(
-            "El nombre de usuario ya está en uso",
-        )
+        logger.warning("[POST Crear Usuario] El nombre de usuario ya se encuentra registrado username=%s", username)
+        raise ValidationError("El nombre de usuario ya está en uso")
 
-    logger.debug(
-        "[POST Crear Usuario] Validando contraseña"
-    )
-
-    # Delegamos la validación al sistema de validadores de Django
-    # para mantener una única fuente de verdad sobre las políticas de seguridad.
+    # Validar contraseña
     validate_password(password)
 
     try:
+        logger.info("[POST Crear Usuario] Creando registro de usuario en la base de datos")
 
-        logger.info(
-            "[POST Crear Usuario] Creando registro de usuario en la base de datos"
-        )
-
-        # Toda la operación se encuentra protegida por una transacción.
-        # Si ocurre cualquier error, ningún cambio será persistido.
+        # Crear usuario
         user = User.objects.create_user(
             email=email,
             username=username,
@@ -175,205 +217,283 @@ def create_user(*, email: str, username: str, password: str, first_name: str, la
             last_name=last_name,
         )
 
-        logger.info(
-            "[POST Crear Usuario] Usuario creado exitosamente user_id=%s",
-            user.id,
-        )
+        if bio:
+            user.bio = bio
+
+      
+        if avatar:
+            logger.info(f"[POST Crear Usuario] Guardando avatar: {avatar.name}")
+            user.avatar = avatar
+
+        user.save()
+
+        logger.info("[POST Crear Usuario] Usuario creado exitosamente user_id=%s", user.id)
 
         return user
 
     except ValidationError:
         raise
-
     except Exception as exc:
-
-        # Capturamos errores inesperados para dejar trazabilidad
-        # completa en los logs antes de propagar la excepción.
-        logger.error(
-            "[POST Crear Usuario] Ocurrió un error inesperado durante la creación del usuario: %s",
-            str(exc),
-        )
-
-        logger.exception(
-            "[POST Crear Usuario] Detalle completo de la excepción"
-        )
-
+        logger.error("[POST Crear Usuario] Ocurrió un error inesperado durante la creación del usuario: %s", str(exc))
+        logger.exception("[POST Crear Usuario] Detalle completo de la excepción")
         raise
 
-def authenticate_user(*, email: str, password: str,) -> User:
+def authenticate_user(*, email: str, password: str, request=None) -> User:
     """
-    Autenticar un usuario utilizando email y contraseña.
-
-    Responsabilidades:
-    - Normalizar email.
-    - Validar campos obligatorios.
-    - Verificar credenciales.
-    - Verificar que la cuenta esté activa.
-    - Retornar la instancia autenticada.
+    Autenticación con:
+    - Cache negativa (bloquea emails inexistentes por 5 min)
+    - Cache positiva (usuarios autenticados por 1 hora)
+    - Rate limiting por IP y email
+    - Protección timing attack
+    - Mensajes genéricos
     """
-
-    logger.info(
-        "[POST Iniciar Sesión] Solicitud de autenticación recibida email=%s",
-        email,
-    )
-
-    # Normalizamos el email para evitar diferencias por
-    # mayúsculas, minúsculas o espacios accidentales.
+    start = time.time()
     email = email.strip().lower()
+    password = password.strip() if password else ''
 
-    logger.debug(
-        "[POST Iniciar Sesión] Email normalizado correctamente"
-    )
+    logger.info(f"[Authenticate] Inicio - email: {email}")
 
-    # Validamos datos obligatorios antes de consultar la base de datos.
-    if not email:
-
-        logger.warning(
-            "[POST Iniciar Sesión] Validación fallida: el email es obligatorio"
-        )
-
-        raise ValidationError(
-            "Email es requerido",
-        )
-
-    if not password:
-
-        logger.warning(
-            "[POST Iniciar Sesión] Validación fallida: la contraseña es obligatoria"
-        )
-
-        raise ValidationError(
-            "La contraseña es requerida",
-        )
-
-    try:
-
-        logger.debug(
-            "[POST Iniciar Sesión] Verificando credenciales del usuario"
-        )
-
-        # Django utiliza USERNAME_FIELD internamente.
-        # Como User.USERNAME_FIELD = "email",
-        # authenticate utilizará el email para autenticar.
-        user = authenticate(
-            username=email,
-            password=password,
-        )
-
-        if user is None:
-
-            logger.warning(
-                "[POST Iniciar Sesión] Credenciales inválidas email=%s",
-                email,
-            )
-
-            raise ValidationError(
-                "Credenciales inválidas",
-            )
-
-        # Verificación adicional de seguridad.
-        if not user.is_active:
-
-            logger.warning(
-                "[POST Iniciar Sesión] Usuario deshabilitado user_id=%s",
-                user.id,
-            )
-
-            raise ValidationError(
-                "La cuenta se encuentra deshabilitada",
-            )
-
-        logger.info(
-            "[POST Iniciar Sesión] Usuario autenticado correctamente user_id=%s",
-            user.id,
-        )
-
-        return user
-
-    except ValidationError:
-        raise
-
-    except Exception as exc:
-
-        logger.error(
-            "[POST Iniciar Sesión] Error inesperado durante la autenticación: %s",
-            str(exc),
-        )
-
-        logger.exception(
-            "[POST Iniciar Sesión] Detalle completo de la excepción"
-        )
-
-        raise
-
-def login_user(*, email: str, password: str,) -> dict[str, Any]:
-
-    """
-    Iniciar sesión de un usuario.
-
-    Responsabilidades:
-    - Actualizar fecha de ultimo acceso
-    - Autenticar al usuario.
-    - Generar tokens JWT
-    - Retornar usuario y tokens
-    """
-
-
-
-    logger.info(
-        "[POST Login Usuario] Solicitud de inicio de sesion recibida, email=%s",
-        email,
-    )
-
-    try:
-
-        logger.debug(
-            "[POST Login Usuario] Iniciando proceso de autenticacion"
-        )
-
-        user = authenticate_user(email=email, password=password)
-
-        logger.debug(
-            "[POST Login Usuario] Actualizando fecha de ultimo acceso"
-        )
-
-        user.last_login = timezone.now()
-        user.save(
-            update_fields=["last_login"],
-        )
-
-        logger.debug(
-            "[POST Login Usuario] Generando tokens JWT"
-        )
-
-        tokens = generate_tokens(user,)
-
-        logger.info("[POST Login Usuario] Inicio de sesion exitoso user_id=%s",
-        user.id,)
-
-        return{
-            "user": user,
-            "tokens": tokens,
-        }
+    # ============================================================
+    # 1. VALIDACIÓN DE ENTRADA
+    # ============================================================
     
-    except ValidationError:
-        raise
+    if not email or not password:
+        logger.warning("[Authenticate] Credenciales vacías")
+        raise ValidationError("Credenciales inválidas")
 
+    logger.info(f"[Authenticate] Paso 1 - Validación entrada: {(time.time() - start)*1000:.2f}ms")
+
+    # ============================================================
+    # 2. CACHE NEGATIVA - ¿Email bloqueado?
+    # ============================================================
+    
+    if _is_user_blocked(email):
+        logger.warning(f"[Authenticate] Email bloqueado por cache negativa: {email}")
+        raise ValidationError("Credenciales inválidas")
+
+    logger.info(f"[Authenticate] Paso 2 - Cache negativa: {(time.time() - start)*1000:.2f}ms")
+
+    # ============================================================
+    # 3. RATE LIMITING
+    # ============================================================
+    
+    client_ip = "0.0.0.0"
+    if request:
+        x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded:
+            client_ip = x_forwarded.split(',')[0]
+        else:
+            client_ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
+
+    ip_key = _get_rate_limit_key_ip(request) if request else None
+    email_key = _get_rate_limit_key_email(email)
+
+    if ip_key and not _check_rate_limit(ip_key, MAX_ATTEMPTS_IP):
+        logger.warning(f"[Authenticate] IP bloqueada: {client_ip}")
+        raise ValidationError("Demasiados intentos. Espera 5 minutos.")
+
+    if not _check_rate_limit(email_key, MAX_ATTEMPTS_EMAIL):
+        logger.warning(f"[Authenticate] Email bloqueado por intentos: {email}")
+        raise ValidationError("Demasiados intentos. Espera 5 minutos.")
+
+    logger.info(f"[Authenticate] Paso 3 - Rate limiting: {(time.time() - start)*1000:.2f}ms")
+
+    # ============================================================
+    # 4. CACHE POSITIVA - ¿Usuario ya autenticado?
+    # ============================================================
+    
+    cached_user = _get_cached_user(email)
+    if cached_user and cached_user.check_password(password):
+        logger.info(f"[Authenticate] Usuario recuperado de cache: {email}")
+        logger.info(f"[Authenticate] Tiempo total: {(time.time() - start)*1000:.2f}ms")
+        return cached_user
+
+    logger.info(f"[Authenticate] Paso 4 - Cache positiva: {(time.time() - start)*1000:.2f}ms")
+
+    # ============================================================
+    # 5. TIMING ATTACK PROTECTION
+    # ============================================================
+    
+    auth_start = time.time()
+
+    try:
+        # ============================================================
+        # 6. AUTENTICACIÓN
+        # ============================================================
         
-    
-    except Exception as exc:
-        logger.error(
-            "[POST Login Usuario] Error inesperado durante el inicio de sesion: %s",
-            str(exc),
-        )
-        logger.exception(
-            "[POST Login Usuario] Detalle completo de la excepción"
-        )
+        logger.info(f"[Authenticate] Paso 5 - Iniciando authenticate()")
+        
+        user = authenticate(username=email, password=password)
+        
+        logger.info(f"[Authenticate] Paso 5 - authenticate() completado en {(time.time() - auth_start)*1000:.2f}ms")
+
+        if user is not None:
+            # ============================================================
+            # 7. LOGIN EXITOSO
+            # ============================================================
+            
+            # Verificar cuenta activa
+            if not user.is_active:
+                logger.warning(f"[Authenticate] Cuenta inactiva: {user.email}")
+                raise ValidationError("Credenciales inválidas")
+            
+            # Resetear rate limits
+            if ip_key:
+                _reset_rate_limit(ip_key)
+            _reset_rate_limit(email_key)
+            
+            # Guardar en cache positiva
+            _set_cached_user(user)
+            
+            # Desbloquear de cache negativa
+            _unblock_user(email)
+            
+            total_time = (time.time() - start) * 1000
+            logger.info(f"[Authenticate] Login exitoso - User: {user.email} - Tiempo total: {total_time:.2f}ms")
+            return user
+
+        # ============================================================
+        # 8. LOGIN FALLIDO
+        # ============================================================
+        
+        # Incrementar rate limits
+        if ip_key:
+            _increment_rate_limit(ip_key)
+        _increment_rate_limit(email_key)
+        
+        # Verificar si el usuario existe
+        from .selectors import get_user_by_email
+        try:
+            user_exists = get_user_by_email(email=email, use_cache=False)
+        except:
+            user_exists = None
+        
+        if not user_exists:
+            _block_user(email)
+            logger.warning(f"[Authenticate] Email no existe, bloqueado: {email}")
+        else:
+            logger.warning(f"[Authenticate] Contraseña incorrecta: {email}")
+
+        # ============================================================
+        # 9. TIMING ATTACK MITIGATION
+        # ============================================================
+        
+        elapsed = time.time() - auth_start
+        if elapsed < TIMING_ATTACK_SLEEP:
+            logger.info(f"[Authenticate] Sleep por timing attack: {(TIMING_ATTACK_SLEEP - elapsed)*1000:.2f}ms")
+            time.sleep(TIMING_ATTACK_SLEEP - elapsed)
+        
+        total_time = (time.time() - start) * 1000
+        logger.info(f"[Authenticate] Login fallido - Tiempo total: {total_time:.2f}ms")
+        raise ValidationError("Credenciales inválidas")
+
+    except ValidationError:
         raise
+    except Exception as exc:
+        logger.error(f"[Authenticate] Error inesperado: {str(exc)}", exc_info=True)
+        raise ValidationError("Error al autenticar. Intenta nuevamente.")
+
+def login_user(*, email: str, password: str, request=None) -> Dict[str, Any]:
+    """
+    Iniciar sesión de un usuario con cache negativa y positiva.
+    """
+    email = email.strip().lower() if email else ''
+    password = password.strip() if password else ''
+
+    logger.info("[POST Login Usuario] Solicitud recibida, email=%s", email)
+
+    # 1. VALIDACIÓN DE ENTRADA
+    if not email or not password:
+        logger.warning("[POST Login Usuario] Credenciales vacías")
+        raise ValidationError("Email y contraseña son requeridos")
+
+    # 2. CACHE NEGATIVA - ¿Usuario bloqueado?
+    if _is_user_blocked(email):  
+        logger.warning(f"[POST Login Usuario] Email bloqueado: {email}")
+        raise ValidationError("Credenciales inválidas")
+
+    # 3. RATE LIMITING
+    ip_key = _get_rate_limit_key_ip(request) if request else None 
+    email_key = _get_rate_limit_key_email(email)  
+
+    if ip_key and not _check_rate_limit(ip_key, MAX_ATTEMPTS_IP): 
+        raise ValidationError("Demasiados intentos desde esta IP. Espera 5 minutos.")
+
+    if not _check_rate_limit(email_key, MAX_ATTEMPTS_EMAIL): 
+        raise ValidationError("Demasiados intentos para este email. Espera 5 minutos.")
+
+    # 4. CACHE POSITIVA - ¿Usuario ya autenticado?
+    cached_user = _get_cached_user(email)  
+    if cached_user and cached_user.check_password(password):
+        logger.info(f"[POST Login Usuario] Usuario recuperado de cache: {email}")
+        cached_user.last_login = timezone.now()
+        cached_user.save(update_fields=["last_login"])
+        return {
+            "user": cached_user,
+            "tokens": generate_tokens(user=cached_user),
+        }
+
+    # 5. TIMING ATTACK PROTECTION
+    start_time = time.time()
+
+    try:
+        # 6. AUTENTICACIÓN
+        user = authenticate(request, email=email, password=password)
+
+        if user is not None:
+            # 7. LOGIN EXITOSO
+            if ip_key:
+                _reset_rate_limit(ip_key)  
+            _reset_rate_limit(email_key)  
+
+            _set_cached_user(user) 
+            _unblock_user(email)  
+
+            user.last_login = timezone.now()
+            user.save(update_fields=["last_login"])
+
+            tokens = generate_tokens(user=user)
+
+            logger.info("[POST Login Usuario] Login exitoso user_id=%s", user.id)
+
+            return {
+                "user": user,
+                "tokens": tokens,
+            }
+
+        # 8. LOGIN FALLIDO
+        if ip_key:
+            _increment_rate_limit(ip_key) 
+        _increment_rate_limit(email_key) 
+
+        # Verificar si el usuario existe
+        try:
+            from .selectors import get_user_by_email
+            user_exists = get_user_by_email(email=email, use_cache=False)
+        except:
+            user_exists = None
+
+        if not user_exists:
+            _block_user(email) 
+            logger.warning(f"[POST Login Usuario] Email no existe, bloqueado: {email}")
+        else:
+            logger.warning(f"[POST Login Usuario] Contraseña incorrecta: {email}")
+
+        # 9. TIMING ATTACK MITIGATION
+        elapsed = time.time() - start_time
+        if elapsed < TIMING_ATTACK_SLEEP:
+            time.sleep(TIMING_ATTACK_SLEEP - elapsed)
+
+        raise ValidationError("Credenciales inválidas")
+
+    except ValidationError:
+        raise
+    except Exception as exc:
+        logger.error("[POST Login Usuario] Error inesperado: %s", str(exc), exc_info=True)
+        raise ValidationError("Error al iniciar sesión. Intenta nuevamente.")
 
 
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
+
 
 
 def refresh_access_token(*, refresh_token: str) -> dict[str, str]:
@@ -499,204 +619,6 @@ def logout_user(*, refresh_token: str) -> None:
 
         logger.exception(
             "[POST Cerrar Sesion] Detalle completo de la excepción"
-        )
-
-        raise
-
-@transaction.atomic
-def get_user_by_id(*, user_id: int) -> User:
-    """
-    Obtener un usuario por su ID.
-    """
-
-    logger.info(
-        "[GET Usuario] Buscando usuario user_id=%s",
-        user_id,
-    )
-
-    if not user_id:
-
-        logger.warning("[GET Usuario] es obligatorio")
-
-        raise ValidationError(
-            "User ID es requerido",
-        )
-    
-    try:
-
-        user = User.objects.filter(
-            id=user_id,
-        ).first()
-
-        if user is None:
-            
-            logger.warning("[GET Usuario] Usuario no encontrado user_id=%s",
-            user_id,)
-
-            raise ValidationError("Usuario no encontrado")
-
-        logger.info(
-            "[GET Usuario] Usuario encontrado exitosamente user_id=%s",
-            user_id,
-        )
-
-        return user
-
-    except ValidationError:
-        raise
-
-    except Exception as exc:
-        
-        logger.error(
-            "[GET Usuario] Error inesperado: %s",
-            str(exc),
-        )
-
-        logger.exception(
-            "[GET Usuario] Detalle completo de la excepción"
-        )
-
-        raise
-
-@transaction.atomic
-def get_user_by_email(*, email: str)-> User:
-    """
-    Obtener un usuario a partir de su correo electronico
-    
-    Responsabilidades:
-        - Normalizar el email de entrada.
-        - Validar que el email exista.
-        - Buscar el usuario
-        - Retornar la instancia encontrada
-    """
-
-    logger.info("[GET Usuario] Buscando usuario por email=%s",
-                email,)
-
-    email = email.strip().lower()
-
-    logger.debug("[DEBUG Usuario] Email normalizado correctamente")
-
-    if not email:
-
-        logger.warning("[GET Usuario] Validación fallida: el email es obligatorio")
-
-        raise ValidationError(
-            "Email es requerido",
-        )
-    
-    try:
-
-        logger.debug(
-            "[GET Usuario] Buscando usuario en la base de datos"
-        )
-
-        user = User.objects.filter(
-            email=email,
-
-        ).first()
-
-        if user is None:
-
-            logger.warning(
-                "[GET Usuario] Usuario no encontrado email=%s",
-                email,
-            )
-
-            raise ValidationError(
-                "Usuario no encontrado",
-            )
-
-        logger.info(
-            "[GET Usuario] Usuario encontrado exitosamente user_id=%s",
-            user.id,
-        )
-
-        return user
-    
-    except ValidationError:
-        raise
-
-    except Exception as exc:
-
-        logger.error(
-            "[GET Usuario] Error inesperado: %s",
-            str(exc),
-        )
-
-        logger.exception(
-            "[GET Usuario] Detalle completo de la excepción"
-        )
-
-        raise
-
-def get_user_by_username(*, username: str) -> User:
-
-    """
-    Obtener un usuario a partir de su nombre de usuario.
-
-    Responsabilidades:
-        - Normalizar el username de entrada.
-        - Validar que el username exista.
-        - Buscar el usuario
-        - Retornar la instancia encontrada
-    """
-
-    logger.info("[GET Usuario] Buscando usuario por username=%s",
-                username,)
-
-    username = username.strip().lower()
-
-    logger.debug("[DEBUG Usuario] Username normalizado correctamente")
-
-    if not username:
-
-        logger.warning("[GET Usuario] Validación fallida: el username es obligatorio")
-
-        raise ValidationError(
-            "Username es requerido",
-        )
-
-    try:
-
-        logger.debug(
-            "[GET Usuario] Buscando usuario en la base de datos"
-        )
-
-        user = User.objects.filter(
-            username=username,
-        ).first()
-
-        if user is None:
-
-            logger.warning(
-                "[GET Usuario] Usuario no encontrado username=%s",
-                username,
-            )
-
-            raise ValidationError(
-                "Usuario no encontrado",
-            )
-
-        logger.info(
-            "[GET Usuario] Usuario encontrado exitosamente user_id=%s",
-            user.id,
-        )
-
-        return user
-
-    except ValidationError:
-        raise
-
-    except Exception as exc:
-
-        logger.error(
-            "[GET Usuario] Error inesperado: %s",
-            str(exc),
-        )
-
-        logger.exception(
-            "[GET Usuario] Detalle completo de la excepción"
         )
 
         raise

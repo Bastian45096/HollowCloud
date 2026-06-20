@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HollowCloud - Panel de Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Paleta Industrial: Negro Consola + Rojo CentOS Stream */
+        :root {
+            --panel-bg-dark: #121214;
+            --panel-sidebar: #1a1a1c;
+            --panel-card-bg: #222225;
+            --centos-red: #C91D04;
+            --centos-red-hover: #E32207;
+            --centos-red-glow: rgba(201, 29, 4, 0.2);
+            --text-title: #ffffff;
+            --text-main: #cfd1d4;
+            --text-muted: #6c727a;
+            --border-color: #2d2d30;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--panel-bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- 1. BARRA DE NODOS --- */
+        .server-sidebar {
+            width: 64px;
+            background-color: #0b0b0c;
+            padding: 16px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .server-icon {
+            width: 42px;
+            height: 42px;
+            background-color: var(--panel-sidebar);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            border: 1px solid var(--border-color);
+        }
+
+        .server-icon:hover, .server-icon.active {
+            background-color: var(--centos-red);
+            color: #ffffff;
+            border-color: var(--centos-red);
+            box-shadow: 0 0 12px var(--centos-red-glow);
+        }
+
+        /* --- 2. BARRA NAVEGACIÓN --- */
+        .channels-sidebar {
+            width: 250px;
+            background-color: var(--panel-sidebar);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .header-title {
+            padding: 16px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-title);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            letter-spacing: 0.5px;
+        }
+
+        .system-badge {
+            background-color: rgba(201, 29, 4, 0.1);
+            border: 1px solid var(--centos-red);
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 3px;
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .channel-list {
+            padding: 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .channel-item {
+            padding: 10px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+
+        .channel-item::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            margin-right: 12px;
+            transition: background-color 0.15s;
+        }
+
+        .channel-item:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: #ffffff;
+        }
+
+        .channel-item.active {
+            background-color: rgba(201, 29, 4, 0.08);
+            color: #ffffff;
+            border-left: 3px solid var(--centos-red);
+        }
+
+        .channel-item.active::before {
+            background-color: var(--centos-red);
+        }
+
+        /* --- 3. ÁREA PRINCIPAL --- */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--panel-bg-dark);
+        }
+
+        .top-nav {
+            height: 56px;
+            background-color: var(--panel-sidebar);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .route-path {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+        
+        .route-path span {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* --- BOTÓN DE PERFIL --- */
+        .profile-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            background-color: var(--panel-card-bg);
+            border: 1px solid var(--border-color);
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: all 0.15s;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .profile-button:hover {
+            border-color: var(--centos-red);
+            background-color: var(--centos-red);
+            box-shadow: 0 0 10px var(--centos-red-glow);
+        }
+
+        #profile-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            object-fit: cover;
+            display: none;
+        }
+
+        #profile-initials {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #ffffff;
+        }
+
+        /* --- BOTÓN DE CERRAR SESIÓN --- */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logout-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background-color: transparent;
+            border: 1px solid var(--text-muted);
+            border-radius: 4px;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+            height: 32px;
+        }
+
+        .logout-button:hover {
+            border-color: var(--centos-red);
+            color: var(--centos-red);
+            background-color: rgba(201, 29, 4, 0.08);
+            box-shadow: 0 0 12px var(--centos-red-glow);
+        }
+
+        .logout-button svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+            transition: transform 0.15s;
+        }
+
+        .logout-button:hover svg {
+            transform: translateX(2px);
+        }
+
+        .logout-status {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: 8px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .logout-status.error {
+            color: var(--centos-red);
+        }
+        .logout-status.success {
+            color: #00ff66;
+        }
+
+        /* --- RESTO DEL DASHBOARD --- */
+        .dashboard-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .status-card {
+            background-color: var(--panel-card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 24px;
+            max-width: 750px;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #00ff66;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00ff66;
+        }
+
+        .status-card h2 {
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .status-card p {
+            color: var(--text-main);
+            font-size: 0.92rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .terminal-box {
+            background-color: #0b0b0c;
+            border-radius: 4px;
+            padding: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: #e1e4e8;
+            border-left: 3px solid var(--centos-red);
+            line-height: 1.5;
+        }
+
+        .terminal-prompt {
+            color: var(--centos-red);
+            font-weight: bold;
+        }
+
+        .terminal-success {
+            color: #00ff66;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Panel Izquierdo de Entornos -->
+    <div class="server-sidebar">
+        <div class="server-icon active" title="Nodo Stream 01">01</div>
+        <div class="server-icon" title="Nodo Stream 02">02</div>
+        <div class="server-icon" title="Asignar Entorno">+</div>
+    </div>
+
+    <!-- Menú de Módulos (SOLO Panel de Control y Historial de Logs) -->
+    <div class="channels-sidebar">
+        <div class="header-title">
+            <span>HollowCloud</span>
+            
+        </div>
+        <div class="channel-list">
+            <a href="#" class="channel-item active">Panel de Control</a>
+            <a href="/logs/" class="channel-item">Historial de Logs</a>
+            <!-- Las opciones "Servicios Core" y "Entorno de Datos" se han eliminado -->
+        </div>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="main-content">
+        <div class="top-nav">
+            <div class="route-path"></span></div>
+
+            <!-- Acciones de la barra superior -->
+            <div class="nav-actions">
+                <!-- Botón de Cerrar Sesión con estado -->
+                <button onclick="logoutUser()" class="logout-button" title="Cerrar sesión" id="logoutBtn">
+                    <svg viewBox="0 0 24 24" width="14" height="14">
+                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                    </svg>
+                    Salir
+                </button>
+                <span id="logoutStatus" class="logout-status"></span>
+
+                <!-- Botón de Perfil -->
+                <a href="/profile/" class="profile-button" title="Perfil" id="profile-btn">
+                    <img id="profile-img" src="" alt="Avatar">
+                    <span id="profile-initials">BA</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="dashboard-body">
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-dot"></div>
+                    <h2>Servicio del Core Operativo</h2>
+                </div>
+                <p>La capa de datos se ha enlazado de forma exitosa con las vistas internas. El daemon del sistema responde sin demoras de red y el tráfico se gestiona mediante sockets Unix locales seguros.</p>
+                
+                <div class="terminal-box">
+                    <span class="terminal-prompt">[root@hollowcloud-node ~]#</span> systemctl status django-app<br>
+                    ● django-app.service - Core Backend Service Engine<br>
+                    &nbsp;&nbsp;&nbsp;Status: <span class="terminal-success">"active (running)"</span> since Mon 2026-06-15; HTTP/1.1 200 OK
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- SCRIPT PARA CARGAR PERFIL Y CERRAR SESIÓN VÍA API          -->
+    <!-- ========================================================== -->
+    <script>
+        // --- Cargar perfil (avatar o iniciales) ---
+        async function loadDashboardProfile() {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                return; // Sin token, mostramos iniciales por defecto
+            }
+
+            try {
+                const response = await fetch("/api/APIVIEWPRF/", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error al cargar perfil");
+                }
+
+                const data = await response.json();
+
+                const img = document.getElementById("profile-img");
+                const initials = document.getElementById("profile-initials");
+
+                if (data.avatar) {
+                    img.src = data.avatar;
+                    img.style.display = "block";
+                    initials.style.display = "none";
+                } else {
+                    const first = data.first_name?.charAt(0) || data.username?.charAt(0) || "U";
+                    const last = data.last_name?.charAt(0) || "";
+                    const initialsText = (first + last).toUpperCase().slice(0, 2);
+                    initials.textContent = initialsText || "U";
+                    img.style.display = "none";
+                    initials.style.display = "flex";
+                }
+
+            } catch (err) {
+                console.error("Error cargando perfil en dashboard:", err);
+                // Si falla, dejamos las iniciales por defecto
+            }
+        }
+
+        // --- Cerrar Sesión (consumiendo API) ---
+        async function logoutUser() {
+            const btn = document.getElementById('logoutBtn');
+            const statusSpan = document.getElementById('logoutStatus');
+
+            // Deshabilitar botón para evitar doble clic
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            statusSpan.textContent = 'Cerrando...';
+            statusSpan.className = 'logout-status';
+
+            try {
+                // Obtener refresh token del localStorage
+                const refreshToken = localStorage.getItem('refresh_token');
+
+                // Si no hay refresh token, igualmente forzamos logout local
+                if (!refreshToken) {
+                    console.warn('No hay refresh token, cerrando sesión localmente');
+                    performLocalLogout();
+                    return;
+                }
+
+                // Llamar al endpoint de logout
+                const response = await fetch('/api/APIVIEWLGT/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    },
+                    body: JSON.stringify({
+                        refresh: refreshToken
+                    })
+                });
+
+                // Si la respuesta es exitosa (200) o error (p.ej. token ya blacklist)
+                if (response.ok) {
+                    statusSpan.textContent = 'Sesión cerrada';
+                    statusSpan.className = 'logout-status success';
+                } else {
+                    // Si da error, igualmente limpiamos local (seguridad)
+                    const errorData = await response.json().catch(() => ({}));
+                    console.warn('Logout API error:', errorData);
+                    statusSpan.textContent = 'Error en servidor, cerrando localmente';
+                    statusSpan.className = 'logout-status error';
+                }
+
+                // Siempre limpiar tokens y redirigir
+                performLocalLogout();
+
+            } catch (err) {
+                console.error('Error en logout:', err);
+                statusSpan.textContent = 'Error de red, cerrando localmente';
+                statusSpan.className = 'logout-status error';
+                // Aún así, limpiamos y redirigimos
+                performLocalLogout();
+            }
+        }
+
+        // --- Función auxiliar: limpiar tokens y redirigir ---
+        function performLocalLogout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            // Redirigir al login después de un breve delay para mostrar mensaje
+            setTimeout(() => {
+                window.location.href = '/login/';
+            }, 800);
+        }
+
+        // --- Ejecutar al cargar la página ---
+        document.addEventListener('DOMContentLoaded', loadDashboardProfile);
+    </script>
+
+</body>
+</html>

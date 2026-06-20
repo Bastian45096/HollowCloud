@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Perfil - HollCloud</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #111111;
+            color: #dddddd;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 40px;
+        }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #333;
+        }
+
+        .breadcrumb {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .breadcrumb .current {
+            color: #f4c430;
+            font-weight: bold;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-terminal {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: transparent;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.2s ease-in-out;
+            box-sizing: border-box;
+            cursor: pointer;
+            border: 1px solid;
+        }
+
+        .btn-terminal.btn-back {
+            color: #f4c430;
+            border-color: #f4c430;
+        }
+
+        .btn-terminal.btn-back:hover {
+            background-color: #f4c430;
+            color: #111111;
+            box-shadow: 0 0 10px rgba(244, 196, 48, 0.3);
+        }
+
+        .btn-terminal.btn-edit {
+            color: #df4a16;
+            border-color: #df4a16;
+        }
+
+        .btn-terminal.btn-edit:hover {
+            background-color: #df4a16;
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(223, 74, 22, 0.4);
+        }
+
+        .btn-terminal.btn-save {
+            color: #00ff66;
+            border-color: #00ff66;
+        }
+
+        .btn-terminal.btn-save:hover {
+            background-color: #00ff66;
+            color: #111111;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+        }
+
+        .btn-terminal:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .profile-card {
+            background: #1e1e1e;
+            padding: 20px;
+            border: 1px solid #df4a16;
+            border-radius: 6px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            min-width: 100px;
+            min-height: 100px;
+            background: #222225;
+            border: 2px solid #f4c430;
+            border-radius: 4px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .editing .avatar-container {
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f4c430;
+            font-size: 11px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .editing .avatar-container:hover .avatar-overlay {
+            opacity: 1;
+        }
+
+        #avatar-input {
+            display: none;
+        }
+
+        .info h2 {
+            margin: 0;
+            color: #f4c430;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #df4a16;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .badge.verified {
+            background: #00aa44;
+        }
+
+        .sys-status {
+            font-size: 12px;
+            margin-top: 6px;
+            font-weight: bold;
+            display: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background: #1a1a1a;
+        }
+
+        .sys-status.success {
+            color: #00ff66;
+            border-left: 3px solid #00ff66;
+        }
+
+        .sys-status.error {
+            color: #df4a16;
+            border-left: 3px solid #df4a16;
+        }
+
+        .sys-status.info {
+            color: #f4c430;
+            border-left: 3px solid #f4c430;
+        }
+
+        .crop-wrapper {
+            display: none;
+            margin-top: 20px;
+            background: #1a1a1a;
+            border: 1px dashed #df4a16;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .crop-container {
+            max-width: 100%;
+            max-height: 400px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .crop-container img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .section {
+            margin-top: 20px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-left: 4px solid #f4c430;
+            border-radius: 4px;
+        }
+
+        .label {
+            color: #df4a16;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .terminal-input {
+            width: 100%;
+            background: #111111;
+            border: 1px solid #333;
+            color: #00ff66;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 8px;
+            font-size: 15px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            display: none; 
+        }
+
+        .terminal-input:focus {
+            outline: none;
+            border-color: #f4c430;
+        }
+
+        .loading {
+            color: #f4c430;
+            font-weight: bold;
+        }
+
+        .loading .spinner {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="profile-scope">
+    <div id="loading" class="loading">
+        <span class="spinner">⟳</span> cargando_perfil...
+    </div>
+
+    <div id="profile" style="display:none;">
+        
+        <div class="nav-header">
+            <div class="breadcrumb">
+                <span class="current"></span>
+            </div>
+            <div class="nav-actions">
+                <button onclick="toggleMode();" id="btn-action" class="btn-terminal btn-edit">
+                    ✎ Editar perfil
+                </button>
+                <a href="/accounts/dashboard/" class="btn-terminal btn-back">
+                    ← Volver al inicio
+                </a>
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <div class="avatar-container" onclick="triggerAvatarUpload();">
+                <img id="avatar" src="" alt="avatar" class="avatar">
+                <div class="avatar-overlay">[ ENCUADRE ]</div>
+            </div>
+            <input type="file" id="avatar-input" accept="image/*" onchange="initCropInterface(this);">
+
+            <div class="info">
+                <h2 id="username"></h2>
+                <div id="verified" class="badge"></div>
+                <div id="sys-status" class="sys-status"></div>
+            </div>
+        </div>
+
+        <div id="crop-wrapper" class="crop-wrapper">
+            <div class="label" style="margin-bottom: 10px;">Ajustar encuadre del Avatar</div>
+            <div class="crop-container">
+                <img id="crop-image" src="" alt="Encuadre">
+            </div>
+            <button type="button" onclick="executeCropAndUpload();" class="btn-terminal" style="color: #00ff66; border-color: #00ff66;">
+                [ OK ] Confirmar corte e inyectar binario
+            </button>
+            <button type="button" onclick="cancelCrop();" class="btn-terminal" style="color: #ff3333; border-color: #ff3333; margin-left: 10px;">
+                Cancelar
+            </button>
+        </div>
+
+        <div class="section">
+            <div class="label">Nombre completo</div>
+            <div class="value" id="full_name_view"></div>
+            <input type="text" id="first_name_input" class="terminal-input" placeholder="Nombre">
+            <input type="text" id="last_name_input" class="terminal-input" placeholder="Apellido">
+
+            <div class="label">Bio</div>
+            <div class="value" id="bio_view"></div>
+            <textarea id="bio_input" class="terminal-input" rows="3" placeholder="Escribe tu biografía..."></textarea>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script>
+    const token = localStorage.getItem("access_token");
+    const avatarImg = document.getElementById("avatar");
+    let isEditingMode = false;
+    let userData = {}; 
+    let cropperInstance = null;
+    let originalData = {};
+
+    avatarImg.onerror = function() {
+        this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%231a1a1c"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="11" fill="%23df4a16">[ERROR]</text></svg>`;
+    };
+
+    function showStatus(message, type = 'info') {
+        const statusDiv = document.getElementById("sys-status");
+        statusDiv.textContent = message;
+        statusDiv.className = `sys-status ${type}`;
+        statusDiv.style.display = "block";
+        if (type !== 'error') {
+            setTimeout(() => { statusDiv.style.display = "none"; }, 4000);
+        }
+    }
+
+    async function loadProfile() {
+        try {
+            const response = await fetch("/api/APIVIEWPRF/", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            if (!response.ok) throw new Error("Error al cargar perfil");
+            userData = await response.json();
+
+            renderViewFields();
+
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("profile").style.display = "block";
+        } catch (err) {
+            document.getElementById("loading").innerText = "[ERROR] Sesión inválida o error de red.";
+            console.error(err);
+        }
+    }
+
+    function renderViewFields() {
+        document.getElementById("username").innerText = userData.username;
+        document.getElementById("full_name_view").innerText = ((userData.first_name || "") + " " + (userData.last_name || "")).trim() || "Sin nombre configurado";
+        document.getElementById("bio_view").innerText = userData.bio || "Sin bio";
+        
+        const verifiedBadge = document.getElementById("verified");
+        if (userData.is_verified) {
+            verifiedBadge.innerText = "VERIFICADO";
+            verifiedBadge.className = "badge verified";
+        } else {
+            verifiedBadge.innerText = "NO VERIFICADO";
+            verifiedBadge.className = "badge";
+        }
+
+        if (userData.avatar) {
+            avatarImg.src = userData.avatar;
+        } else {
+            avatarImg.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%231a1a1c"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="11" fill="%236c727a">[NO_IMG]</text></svg>`;
+        }
+    }
+
+    function toggleMode() {
+        const scope = document.getElementById("profile-scope");
+        const btn = document.getElementById("btn-action");
+        const breadcrumb = document.querySelector(".breadcrumb");
+
+        const views = [document.getElementById("full_name_view"), document.getElementById("bio_view")];
+        const inputs = [document.getElementById("first_name_input"), document.getElementById("last_name_input"), document.getElementById("bio_input")];
+
+        if (!isEditingMode) {
+            // ENTRAR EN MODO EDICIÓN
+            isEditingMode = true;
+            scope.classList.add("editing");
+            breadcrumb.innerHTML = '<span style="color:#f4c430;">✎ Editando perfil</span>';
+            btn.innerHTML = 'Guardar cambios';
+            btn.className = 'btn-terminal btn-save';
+
+            // Guardar datos originales
+            originalData = {
+                first_name: userData.first_name || "",
+                last_name: userData.last_name || "",
+                bio: userData.bio || ""
+            };
+
+            document.getElementById("first_name_input").value = originalData.first_name;
+            document.getElementById("last_name_input").value = originalData.last_name;
+            document.getElementById("bio_input").value = originalData.bio;
+
+            views.forEach(v => v.style.display = "none");
+            inputs.forEach(i => i.style.display = "block");
+        } else {
+            // SALIR DEL MODO EDICIÓN - VERIFICAR CAMBIOS
+            const currentData = {
+                first_name: document.getElementById("first_name_input").value,
+                last_name: document.getElementById("last_name_input").value,
+                bio: document.getElementById("bio_input").value
+            };
+
+            const hasChanges = 
+                currentData.first_name !== originalData.first_name ||
+                currentData.last_name !== originalData.last_name ||
+                currentData.bio !== originalData.bio;
+
+            if (hasChanges) {
+                saveProfileChanges();
+            } else {
+                // Sin cambios, solo salir del modo edición
+                exitEditingState();
+                showStatus("ℹ️ Sin cambios para guardar", "info");
+            }
+        }
+    }
+
+    async function saveProfileChanges() {
+        const btn = document.getElementById("btn-action");
+        const statusDiv = document.getElementById("sys-status");
+        
+        // Deshabilitar botón mientras se guarda
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Guardando...';
+        showStatus("⏳ Sincronizando datos...", "info");
+
+        // Usar FormData para todo (texto + imagen)
+        const formData = new FormData();
+        formData.append('first_name', document.getElementById("first_name_input").value);
+        formData.append('last_name', document.getElementById("last_name_input").value);
+        formData.append('bio', document.getElementById("bio_input").value);
+
+        try {
+            const response = await fetch("/api/APIVIEWUPDATEPRF/", {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            
+            const resData = await response.json();
+            userData = resData.user || resData;
+            
+            // Salir del modo edición y mostrar los datos actualizados
+            exitEditingState();
+            renderViewFields();
+            
+            showStatus("✅ Perfil actualizado correctamente", "success");
+
+        } catch (err) {
+            showStatus(`❌ ${err.message}`, "error");
+            console.error(err);
+        } finally {
+            // Reactivar botón
+            btn.disabled = false;
+            btn.innerHTML = 'Guardar cambios';
+        }
+    }
+
+    function exitEditingState() {
+        isEditingMode = false;
+        const scope = document.getElementById("profile-scope");
+        const btn = document.getElementById("btn-action");
+        const breadcrumb = document.querySelector(".breadcrumb");
+
+        scope.classList.remove("editing");
+        breadcrumb.innerHTML = '<span class="current"></span>';
+        btn.innerHTML = '✎ Editar perfil';
+        btn.className = 'btn-terminal btn-edit';
+
+        document.getElementById("full_name_view").style.display = "block";
+        document.getElementById("bio_view").style.display = "block";
+        
+        document.getElementById("first_name_input").style.display = "none";
+        document.getElementById("last_name_input").style.display = "none";
+        document.getElementById("bio_input").style.display = "none";
+        cancelCrop();
+    }
+
+    function triggerAvatarUpload() {
+        if (isEditingMode) {
+            document.getElementById("avatar-input").click();
+        }
+    }
+
+    function initCropInterface(input) {
+        if (!input.files || !input.files[0]) return;
+
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const cropImage = document.getElementById("crop-image");
+            cropImage.src = e.target.result;
+
+            document.getElementById("crop-wrapper").style.display = "block";
+
+            if (cropperInstance) {
+                cropperInstance.destroy();
+            }
+
+            cropperInstance = new Cropper(cropImage, {
+                aspectRatio: 1, 
+                viewMode: 1,
+                background: false,
+                responsive: true
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function executeCropAndUpload() {
+        if (!cropperInstance) return;
+
+        showStatus("⏳ Renderizando y subiendo encuadre...", "info");
+
+        cropperInstance.getCroppedCanvas({ width: 150, height: 150 }).toBlob(async (blob) => {
+            const formData = new FormData();
+            formData.append("avatar", blob, "avatar.jpg");
+
+            avatarImg.src = URL.createObjectURL(blob);
+
+            try {
+                const response = await fetch("/api/APIVIEWUPDATEPRF/", { 
+                    method: "PATCH", 
+                    headers: { "Authorization": `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Fallo al subir binario");
+                const resData = await response.json();
+                
+                const finalUser = resData.user || resData;
+                if (finalUser.avatar) {
+                    userData.avatar = finalUser.avatar;
+                    avatarImg.src = finalUser.avatar + "?t=" + Date.now();
+                    showStatus("✅ Avatar actualizado correctamente", "success");
+                }
+                cancelCrop();
+            } catch (err) {
+                showStatus(`❌ ${err.message}`, "error");
+                console.error(err);
+                renderViewFields();
+            }
+        }, "image/jpeg", 0.9);
+    }
+
+    function cancelCrop() {
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+        }
+        document.getElementById("crop-wrapper").style.display = "none";
+        document.getElementById("avatar-input").value = "";
+    }
+
+    loadProfile();
+</script>
+</body>
+</html>
