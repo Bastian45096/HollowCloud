@@ -1,0 +1,202 @@
+/* ============================================================
+   MODAL DE EXPULSIÓN - CONFIRMACIÓN
+   ============================================================ */
+
+   .modal-kick-box {
+    max-width: 380px;
+    text-align: center;
+    padding: 35px 30px;
+}
+
+.kick-icon-orange {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(233, 84, 32, 0.1);
+    border: 2px solid rgba(233, 84, 32, 0.2);
+    transition: all 0.3s ease;
+}
+
+.kick-icon-orange svg {
+    stroke: var(--ubuntu-orange);
+    width: 28px;
+    height: 28px;
+}
+
+.kick-icon-orange:hover {
+    background: rgba(233, 84, 32, 0.2);
+    transform: scale(1.05);
+}
+
+.modal-kick-box h2 {
+    color: var(--text-title);
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.modal-kick-box .subtitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.kick-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.kick-actions .btn-cancel {
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    min-width: 100px;
+}
+
+.kick-actions .btn-cancel:hover {
+    background: var(--panel-hover);
+    color: var(--text-main);
+}
+
+.kick-actions .btn-kick {
+    padding: 10px 28px;
+    background: var(--ubuntu-orange);
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    min-width: 100px;
+}
+
+.kick-actions .btn-kick:hover {
+    background: var(--ubuntu-orange-hover);
+    box-shadow: 0 0 20px var(--ubuntu-orange-glow);
+}
+
+.kick-actions .btn-kick:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+    .kick-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    .kick-actions .btn-cancel,
+    .kick-actions .btn-kick {
+        width: 100%;
+        min-width: unset;
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+/* ============================================================
+   MODAL DE EXPULSIÓN - PROCESANDO
+   ============================================================ */
+
+.modal-kick-processing-box {
+    max-width: 380px;
+    text-align: center;
+    padding: 45px 30px;
+}
+
+.kick-processing-circle {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px auto;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kick-processing-circle svg {
+    stroke: var(--ubuntu-orange);
+    width: 32px;
+    height: 32px;
+    position: relative;
+    z-index: 2;
+}
+
+.kick-processing-spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: var(--ubuntu-orange);
+    border-right-color: var(--ubuntu-orange);
+    animation: kickSpinner 0.8s linear infinite;
+    z-index: 1;
+}
+
+.kick-processing-circle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(233, 84, 32, 0.08);
+    border: 2px solid rgba(233, 84, 32, 0.15);
+    z-index: 0;
+}
+
+@keyframes kickSpinner {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.kick-processing-circle {
+    animation: kickPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes kickPulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.modal-kick-processing-box h2 {
+    color: var(--text-title);
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.modal-kick-processing-box .subtitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 0;
+    text-align: center;
+}

@@ -1,0 +1,37 @@
+/* ============================================================
+   VARIABLES Y RESET
+   ============================================================ */
+
+   :root {
+    --panel-bg-dark: #121214;
+    --panel-sidebar: #1a1a1c;
+    --panel-card-bg: #222225;
+    --panel-hover: #2a2a2d;
+    --ubuntu-orange: #e95420;
+    --ubuntu-orange-hover: #ff6b35;
+    --ubuntu-orange-glow: rgba(233, 84, 32, 0.2);
+    --text-title: #ffffff;
+    --text-main: #cfd1d4;
+    --text-muted: #6c727a;
+    --border-color: #2d2d30;
+    --success-green: #00ff66;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--panel-bg-dark);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+body.modal-open {
+    overflow: hidden;
+}

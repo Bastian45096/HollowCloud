@@ -1,0 +1,231 @@
+/* ============================================================
+   MENSAJES Y ÁREA DE CHAT
+   ============================================================ */
+
+   .messages-area {
+    flex: 1;
+    padding: 16px 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 0;
+}
+
+.message {
+    display: flex;
+    gap: 12px;
+    padding: 6px 0;
+    align-items: flex-start;
+    position: relative;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.message:hover {
+    background: var(--panel-hover);
+}
+
+.message-content-wrapper {
+    display: flex;
+    flex: 1;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+}
+
+.message-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.message-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.message:hover .message-actions {
+    opacity: 1;
+}
+
+.action-btn {
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+    line-height: 1;
+}
+
+.action-btn:hover {
+    background: var(--panel-card-bg);
+}
+
+.edit-btn:hover {
+    color: var(--ubuntu-orange);
+    background: rgba(233, 84, 32, 0.1);
+}
+
+.delete-btn:hover {
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.1);
+}
+
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--panel-card-bg);
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    overflow: hidden;
+}
+
+.message-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+}
+
+.message-author {
+    color: var(--text-title);
+    font-weight: 600;
+}
+
+.message-time {
+    color: var(--text-muted);
+    font-size: 0.65rem;
+}
+
+.message-text {
+    color: var(--text-main);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    word-break: break-word;
+    margin-top: 2px;
+}
+
+.message-text .edited {
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    font-style: italic;
+    margin-left: 6px;
+}
+
+.message-content .message-text:empty {
+    display: none;
+}
+
+.empty-messages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    gap: 8px;
+}
+
+.empty-messages h3 {
+    color: var(--text-title);
+    font-weight: 500;
+}
+
+/* Archivos adjuntos */
+.message-file {
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--panel-bg-dark);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+    color: var(--text-main);
+    transition: all 0.2s;
+    max-width: 300px;
+}
+
+.message-file:hover {
+    border-color: var(--ubuntu-orange);
+    background: var(--panel-hover);
+}
+
+.message-file .file-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.message-file .file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.message-file .file-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-title);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message-file .file-size {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.message-file .file-download {
+    margin-left: auto;
+    color: var(--ubuntu-orange);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+/* Imágenes en mensajes */
+.message-image-container {
+    margin-top: 8px;
+    max-width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    background: var(--panel-bg-dark);
+    position: relative;
+}
+
+.message-image-container img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.message-image-container img:hover {
+    transform: scale(1.02);
+}

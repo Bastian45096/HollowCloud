@@ -296,7 +296,7 @@ TIMING_ATTACK_SLEEP = 0.1  # 100ms
 
 
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.Argon2PasswordHasher',     # ✅ Primero (más rápido y seguro)
+    'django.contrib.auth.hashers.Argon2PasswordHasher',     
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',     # Fallback
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher', # Fallback
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher', # Fallback

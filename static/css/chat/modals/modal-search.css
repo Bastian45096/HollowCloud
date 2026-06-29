@@ -1,0 +1,208 @@
+/* ============================================================
+   MODAL DE BÚSQUEDA
+   ============================================================ */
+
+/* Contenedor del input con ícono */
+.search-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: stretch;
+}
+
+.search-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Ícono de lupa dentro del input */
+.search-input-wrapper .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    stroke: var(--text-muted);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+/* Input */
+.search-input-wrapper input {
+    width: 100%;
+    padding: 12px 14px 12px 42px;
+    background: var(--panel-bg-dark);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.search-input-wrapper input::placeholder {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+/* Focus - naranja Ubuntu */
+.search-input-wrapper input:focus {
+    border-color: var(--ubuntu-orange);
+    box-shadow: 0 0 0 4px rgba(233, 84, 32, 0.1);
+}
+
+.search-input-wrapper input:focus ~ .search-icon {
+    stroke: var(--ubuntu-orange);
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Hover sobre el input */
+.search-input-wrapper:hover .search-icon {
+    stroke: var(--text-main);
+}
+
+.search-input-wrapper input:focus ~ .search-icon {
+    stroke: var(--ubuntu-orange);
+    filter: drop-shadow(0 0 6px rgba(233, 84, 32, 0.3));
+}
+
+/* Botón Buscar - naranja Ubuntu */
+.search-input-group button {
+    padding: 12px 28px;
+    background: var(--ubuntu-orange);
+    border: none;
+    border-radius: 8px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-input-group button:hover {
+    background: var(--ubuntu-orange-hover);
+    box-shadow: 0 0 24px rgba(233, 84, 32, 0.3);
+    transform: translateY(-1px);
+}
+
+.search-input-group button:active {
+    transform: scale(0.97);
+}
+
+/* ============================================================
+   RESULTADOS DE BÚSQUEDA
+   ============================================================ */
+
+.results-area {
+    margin-bottom: 16px;
+    min-height: 60px;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--panel-bg-dark);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.result-item:hover {
+    border-color: var(--ubuntu-orange);
+    background: var(--panel-hover);
+}
+
+.result-item .name {
+    color: var(--text-title);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.result-item .owner {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    display: block;
+    margin-top: 2px;
+}
+
+.result-item .join-btn {
+    padding: 8px 20px;
+    background: var(--ubuntu-orange);
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.result-item .join-btn:hover {
+    background: var(--ubuntu-orange-hover);
+    box-shadow: 0 0 16px rgba(233, 84, 32, 0.3);
+    transform: scale(1.02);
+}
+
+/* ============================================================
+   BOTÓN CERRAR
+   ============================================================ */
+
+.close-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.close-btn:hover {
+    background: var(--panel-card-bg);
+    border-color: var(--text-muted);
+    color: var(--text-main);
+}
+
+/* ============================================================
+   ESTADOS
+   ============================================================ */
+
+.empty-state {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    display: block;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.error-state {
+    color: #ff4444;
+    font-size: 0.85rem;
+    display: block;
+    text-align: center;
+    padding: 20px 0;
+}

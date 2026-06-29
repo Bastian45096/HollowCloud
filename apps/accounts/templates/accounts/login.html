@@ -14,9 +14,9 @@
 
         body {
             font-family: 'Ubuntu Mono', 'Courier New', Courier, monospace;
-            background: #2c001e; /* Fondo clásico berenjena de Ubuntu */
+            background: #2c001e;
             background-image: linear-gradient(135deg, #300a24 0%, #111111 100%);
-            color: #dfdbd2; /* Texto gris claro de consola */
+            color: #dfdbd2;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -25,8 +25,8 @@
         }
 
         .container {
-            background: #111111; /* Fondo negro de ventana de terminal */
-            border: 1px solid #5e2750; /* Borde berenjena intermedio */
+            background: #111111;
+            border: 1px solid #5e2750;
             border-radius: 6px;
             padding: 30px;
             max-width: 450px;
@@ -46,7 +46,7 @@
         .logo {
             font-size: 24px;
             font-weight: 700;
-            color: #e95420; /* Naranja oficial de Ubuntu */
+            color: #e95420;
             letter-spacing: -0.5px;
         }
 
@@ -102,7 +102,7 @@
             width: 100%;
             padding: 12px;
             background: transparent;
-            border: 1px solid #e95420; /* Estilo de botón terminal */
+            border: 1px solid #e95420;
             border-radius: 4px;
             color: #e95420;
             font-family: 'Ubuntu Mono', 'Courier New', Courier, monospace;
@@ -134,8 +134,7 @@
             justify-content: center;
             margin-top: 25px;
             padding-top: 20px;
-            /* SE CAMBIA EL COLOR DE LA LÍNEA GRIS POR UN DIVISOR NARANJA SUTIL DE UBUNTU */
-            border-top: 1px dashed rgba(233, 84, 32, 0.4); 
+            border-top: 3px solid #e95420;
             gap: 12px;
             width: 100%;
         }
@@ -252,12 +251,26 @@
         <span class="footer-text">¿No tienes cuenta?</span>
         <a href="/register/" class="btn-register">Crear Cuenta</a>
     </div>
+
+    
+    <div id="loadingOverlay" style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 6px;
+        display: none;
+        z-index: 10;
+    "></div>
 </div>
 
 <script>
     const form = document.getElementById('loginForm');
     const btn = document.getElementById('loginBtn');
     const errorMsg = document.getElementById('errorMessage');
+    const loadingOverlay = document.getElementById('loadingOverlay'); 
 
     document.querySelectorAll('input').forEach(el => {
         el.addEventListener('input', function() {
@@ -269,8 +282,16 @@
         e.preventDefault();
         
         errorMsg.classList.remove('show');
+        
+        // BLOQUEAR
         btn.disabled = true;
         btn.innerHTML = '<span class="loading-spinner"></span> Iniciando sesión...';
+        loadingOverlay.style.display = 'block';
+        
+        // DESHABILITAR INPUTS 
+        document.querySelectorAll('#loginForm input').forEach(input => {
+            input.disabled = true;
+        });
 
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
@@ -292,19 +313,19 @@
             if (response.ok) {
                 if (data.tokens && data.tokens.access) {
                     localStorage.setItem('access_token', data.tokens.access);
-                    console.log('✅ Access token guardado');
+                    console.log('Access token guardado');
                 } else {
-                    console.warn('⚠️ No se recibió access_token');
+                    console.warn('No se recibio access_token');
                 }
                 
                 if (data.tokens && data.tokens.refresh) {
                     localStorage.setItem('refresh_token', data.tokens.refresh);
-                    console.log('✅ Refresh token guardado');
+                    console.log('Refresh token guardado');
                 } else {
-                    console.warn('⚠️ No se recibió refresh_token');
+                    console.warn('No se recibio refresh_token');
                 }
                 
-                console.log('📦 Token en localStorage:', localStorage.getItem('access_token') ? '✅ Existe' : '❌ No existe');
+                console.log('Token en localStorage:', localStorage.getItem('access_token') ? 'Existe' : 'No existe');
                 window.location.href = '/accounts/dashboard/';
             } else {
                 let errorText = 'Credenciales inválidas. Por favor, verifica tu email y contraseña.';
@@ -323,18 +344,29 @@
                 }
                 
                 showError(errorText);
+                //  DESBLOQUEAR EN ERROR 
+                btn.disabled = false;
+                btn.innerHTML = 'Iniciar sesión';
+                loadingOverlay.style.display = 'none';
+                document.querySelectorAll('#loginForm input').forEach(input => {
+                    input.disabled = false;
+                });
             }
         } catch (err) {
             showError('Error de conexión. Verifica tu conexión a internet.');
             console.error('Error:', err);
-        } finally {
+            // DESBLOQUEAR EN ERROR 
             btn.disabled = false;
             btn.innerHTML = 'Iniciar sesión';
+            loadingOverlay.style.display = 'none';
+            document.querySelectorAll('#loginForm input').forEach(input => {
+                input.disabled = false;
+            });
         }
     });
 
     function showError(message) {
-        errorMsg.textContent = '❌ ' + message;
+        errorMsg.textContent = message;
         errorMsg.classList.add('show');
     }
 

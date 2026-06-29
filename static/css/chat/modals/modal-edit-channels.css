@@ -1,0 +1,241 @@
+/* static/css/chat/modals/modal-edit-channels.css */
+
+/* ============================================================
+   MODAL DE EDITAR CANALES - ESTILOS UBUNTU
+   ============================================================ */
+
+.modal-edit-channels-box {
+    max-width: 440px;
+    text-align: center;
+}
+
+.modal-edit-channels-box .edit-channels-icon {
+    margin: 0 auto 16px;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(233, 84, 32, 0.1);
+    border: 2px solid rgba(233, 84, 32, 0.3);
+}
+
+.modal-edit-channels-box h2 {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-title, #dfdbd2);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.modal-edit-channels-box .subtitle {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: var(--text-muted, #888);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   SELECT Y FORMULARIOS
+   ============================================================ */
+
+.modal-edit-channels-box select,
+.modal-edit-channels-box input,
+.modal-edit-channels-box textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: #1e1e1e;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    color: var(--text-title, #dfdbd2);
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.modal-edit-channels-box select:focus,
+.modal-edit-channels-box input:focus,
+.modal-edit-channels-box textarea:focus {
+    outline: none;
+    border-color: #e95420;
+}
+
+.modal-edit-channels-box select option {
+    background: #1e1e1e;
+    color: var(--text-title, #dfdbd2);
+}
+
+/* ============================================================
+   BOTONES DE ACCIÓN - ESTILOS UBUNTU
+   ============================================================ */
+
+.edit-channels-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Botón Cancelar - Estilo Ubuntu (gris/transparente) */
+.edit-channels-actions .btn-cancel {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    color: #aea79f;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.edit-channels-actions .btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #888888;
+    color: #dfdbd2;
+}
+
+.edit-channels-actions .btn-cancel:active {
+    transform: scale(0.97);
+}
+
+/*  Botón Guardar cambios - Estilo Ubuntu (naranja) */
+.edit-channels-actions .btn-save-channels {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    padding: 10px 28px;
+    background: #e95420;
+    border: 1px solid #e95420;
+    border-radius: 4px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.edit-channels-actions .btn-save-channels:hover:not(:disabled) {
+    background: #d94a1a;
+    border-color: #d94a1a;
+    box-shadow: 0 0 20px rgba(233, 84, 32, 0.3);
+}
+
+.edit-channels-actions .btn-save-channels:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+/*  Botón Guardar cambios DESHABILITADO */
+.edit-channels-actions .btn-save-channels:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #333333;
+    border-color: #555555;
+    color: #888888;
+}
+
+.edit-channels-actions .btn-save-channels:disabled:hover {
+    background: #333333;
+    border-color: #555555;
+    box-shadow: none;
+}
+
+/* ============================================================
+   LABELS
+   ============================================================ */
+
+.modal-edit-channels-box label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted, #888);
+    margin-bottom: 4px;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+}
+
+.modal-edit-channels-box textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* static/css/chat/modals/modal-edit-channels.css */
+
+/* ============================================================
+   BOTONES DEL MODAL DE EDITAR CANALES - ESTILO UBUNTU
+   ============================================================ */
+
+.edit-channels-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Botón Cancelar - Estilo Ubuntu */
+.edit-channels-actions .btn-cancel {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    color: #aea79f;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.edit-channels-actions .btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #888888;
+    color: #dfdbd2;
+}
+
+.edit-channels-actions .btn-cancel:active {
+    transform: scale(0.97);
+}
+
+/*  Botón Guardar cambios - Estilo Ubuntu (naranja) */
+.edit-channels-actions .btn-save-channels {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    padding: 10px 28px;
+    background: #e95420;
+    border: 1px solid #e95420;
+    border-radius: 4px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.edit-channels-actions .btn-save-channels:hover:not(:disabled) {
+    background: #d94a1a;
+    border-color: #d94a1a;
+    box-shadow: 0 0 20px rgba(233, 84, 32, 0.3);
+}
+
+.edit-channels-actions .btn-save-channels:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+/*  Botón Guardar cambios DESHABILITADO */
+.edit-channels-actions .btn-save-channels:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #333333;
+    border-color: #555555;
+    color: #888888;
+}
+
+.edit-channels-actions .btn-save-channels:disabled:hover {
+    background: #333333;
+    border-color: #555555;
+    box-shadow: none;
+}

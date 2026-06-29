@@ -1,0 +1,48 @@
+/* ============================================================
+   BARRA DE NAVEGACIÓN SUPERIOR
+   ============================================================ */
+
+   .top-nav {
+    height: 48px;
+    background-color: var(--panel-sidebar);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    flex-shrink: 0;
+}
+
+.top-nav .channel-title {
+    color: var(--text-title);
+    font-weight: 600;
+}
+
+.top-nav .channel-title::before {
+    content: "# ";
+    color: var(--text-muted);
+}
+
+.top-nav-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+}
+
+.btn-icon:hover {
+    color: var(--text-title);
+    background-color: var(--panel-hover);
+}

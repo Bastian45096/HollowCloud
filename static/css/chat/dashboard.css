@@ -1,0 +1,31 @@
+/* ============================================================
+   DASHBOARD - ARCHIVO PRINCIPAL
+   Importa todos los estilos
+   ============================================================ */
+
+/* Base */
+@import url('base/variables.css');
+@import url('base/layout.css');
+@import url('base/scrollbar.css');
+
+/* Components */
+@import url('components/workspace-sidebar.css');
+@import url('components/channel-sidebar.css');
+@import url('components/top-nav.css');
+@import url('components/messages.css');
+@import url('components/message-input.css');
+@import url('components/members.css');
+
+/* Modals */
+@import url('modals/modal-base.css');
+@import url('modals/modal-search.css');
+@import url('modals/modal-edit.css');
+@import url('modals/modal-delete.css');
+@import url('modals/modal-kick.css');
+@import url('modals/modal-leave.css');
+@import url('modals/modal-workspace-delete.css');
+@import url('modals/modal-edit-workspace.css');
+@import url('modals/modal-delete-channels.css');
+
+/* Responsive */
+@import url('responsive/responsive.css');

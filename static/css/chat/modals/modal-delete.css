@@ -1,0 +1,92 @@
+/* ============================================================
+   MODAL DE ELIMINACIÓN
+   ============================================================ */
+
+   .modal-delete-box {
+    max-width: 380px;
+    text-align: center;
+    padding: 35px 30px;
+}
+
+.delete-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.8;
+}
+
+.modal-delete-box h2 {
+    color: var(--text-title);
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.modal-delete-box .subtitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.delete-actions .btn-cancel {
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    min-width: 100px;
+}
+
+.delete-actions .btn-cancel:hover {
+    background: var(--panel-hover);
+    color: var(--text-main);
+}
+
+.delete-actions .btn-delete {
+    padding: 10px 28px;
+    background: #ff4444;
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    min-width: 100px;
+}
+
+.delete-actions .btn-delete:hover {
+    background: #ff2222;
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+}
+
+.delete-actions .btn-delete:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+    .delete-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    .delete-actions .btn-cancel,
+    .delete-actions .btn-delete {
+        width: 100%;
+        min-width: unset;
+        justify-content: center;
+        text-align: center;
+    }
+}

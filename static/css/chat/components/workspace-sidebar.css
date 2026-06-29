@@ -1,0 +1,68 @@
+/* ============================================================
+   SIDEBAR DE WORKSPACES
+   ============================================================ */
+
+   .workspace-icon {
+    width: 42px;
+    height: 42px;
+    min-height: 42px;
+    background-color: var(--panel-sidebar);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+    text-align: center;
+    word-break: break-all;
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+.workspace-icon:hover,
+.workspace-icon.active {
+    background-color: var(--ubuntu-orange);
+    color: #ffffff;
+    border-color: var(--ubuntu-orange);
+    box-shadow: 0 0 12px var(--ubuntu-orange-glow);
+}
+
+.workspace-icon.add {
+    border: 1px dashed var(--text-muted);
+    font-size: 1.2rem;
+    background: transparent;
+    color: var(--text-muted);
+}
+
+.workspace-icon.add:hover {
+    border-color: var(--ubuntu-orange);
+    color: var(--ubuntu-orange);
+}
+
+.workspace-icon.search {
+    border: 1px solid var(--text-muted);
+    background: transparent;
+    padding: 0;
+    margin-bottom: 4px;
+}
+
+.workspace-icon.search:hover {
+    border-color: var(--ubuntu-orange);
+    background: rgba(233, 84, 32, 0.1);
+}
+
+.workspace-icon.search svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--text-muted);
+    transition: stroke 0.2s;
+}
+
+.workspace-icon.search:hover svg {
+    stroke: var(--ubuntu-orange);
+}

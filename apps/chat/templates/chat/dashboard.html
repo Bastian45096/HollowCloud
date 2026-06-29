@@ -1,0 +1,885 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - HollowCloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    
+    <link rel="stylesheet" href="{% static 'css/chat/dashboard.css' %}">
+</head>
+
+<body>
+
+    <!-- Sidebar de Workspaces -->
+    <div class="workspace-sidebar" id="workspaceSidebar">
+        <!-- Botón Buscar -->
+        <button onclick="window.showSearchModal()" class="workspace-icon search" title="Buscar workspaces">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+        </button>
+        <div id="workspaceList"></div>
+        
+        <!-- BOTÓN CREAR WORKSPACE (+) -->
+        <button onclick="window.crearWorkspace()" class="workspace-icon create" title="Crear workspace" style="
+            margin-top: auto;
+            margin-bottom: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #e95420;
+            background: transparent;
+            color: #e95420;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+            margin-left: auto;
+            margin-right: auto;
+        " onmouseover="this.style.background='#e95420'; this.style.color='#ffffff'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)';" onmouseout="this.style.background='transparent'; this.style.color='#e95420'; this.style.boxShadow='none';">
+            +
+        </button>
+    </div>
+
+    <!-- Sidebar de Canales -->
+    <div class="channel-sidebar">
+        <div class="channel-header">
+            <div>
+                <div id="workspaceName"></div>
+                <div class="workspace-name" id="workspaceDescription"></div>
+            </div>
+        </div>
+        <div class="channel-list">
+            <!-- SECCIÓN CANALES CON BOTÓN CREAR CANAL (+) -->
+            <div class="section-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 12px;">
+                <span>Canales</span>
+                <!-- BOTÓN CREAR CANAL (+) -->
+                <button id="createChannelBtn" 
+                        onclick="window.crearCanal()" 
+                        style="
+                            display: none;
+                            background: transparent;
+                            border: 1.5px solid #e95420;
+                            border-radius: 50%;
+                            width: 24px;
+                            height: 24px;
+                            color: #e95420;
+                            font-size: 1rem;
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 0;
+                            line-height: 1;
+                        "
+                        onmouseover="this.style.background='#e95420'; this.style.color='#ffffff'; this.style.boxShadow='0 0 15px rgba(233,84,32,0.3)';"
+                        onmouseout="this.style.background='transparent'; this.style.color='#e95420'; this.style.boxShadow='none';">
+                    +
+                </button>
+            </div>
+            <div id="channelItems">
+                <div style="padding: 8px 12px; color: var(--text-muted); font-size: 0.8rem; font-family: 'Ubuntu Mono', 'Courier New', monospace;">Selecciona un workspace</div>
+            </div>
+            <div id="workspaceMembers"></div>
+            
+            <!-- BOTÓN ABANDONAR WORKSPACE (miembros) -->
+            <div id="leaveWorkspaceContainer" style="padding: 8px 12px; margin-top: 8px; border-top: 1px solid var(--border-color, #2a2a2a);">
+                <button id="leaveWorkspaceBtn" 
+                        onclick="window.abandonarWorkspace()" 
+                        style="
+                            display: none;
+                            width: 100%;
+                            padding: 8px 16px;
+                            background: transparent;
+                            color: #e95420;
+                            border: 1.5px solid #e95420;
+                            border-radius: 50px;
+                            font-size: 0.8rem;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            letter-spacing: 0.3px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                        "
+                        onmouseover="this.style.background='#e95420'; this.style.color='#ffffff'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)';"
+                        onmouseout="this.style.background='transparent'; this.style.color='#e95420'; this.style.boxShadow='none';">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="flex-shrink: 0;">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h2V7zm0 8h-2v2h2v-2z" 
+                            fill="currentColor"/>
+                        <path d="M15 9l-3 3-3-3-1 1 3 3-3 3 1 1 3-3 3 3 1-1-3-3 3-3z" 
+                            fill="currentColor" opacity="0.6"/>
+                    </svg>
+                    Abandonar Workspace
+                </button>
+            </div>
+            
+            <!-- 1️⃣ BOTÓN ELIMINAR WORKSPACE (solo owner) -->
+            <div id="deleteWorkspaceContainer" style="padding: 8px 12px; margin-top: 4px; border-top: 1px solid var(--border-color, #2a2a2a);">
+                <button id="deleteWorkspaceBtn" 
+                        onclick="window.eliminarWorkspace()" 
+                        style="
+                            display: none;
+                            width: 100%;
+                            padding: 8px 16px;
+                            background: transparent;
+                            color: #e95420;
+                            border: 1.5px solid #e95420;
+                            border-radius: 50px;
+                            font-size: 0.8rem;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            letter-spacing: 0.3px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                        "
+                        onmouseover="this.style.background='#e95420'; this.style.color='#ffffff'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)';"
+                        onmouseout="this.style.background='transparent'; this.style.color='#e95420'; this.style.boxShadow='none';">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="flex-shrink: 0;">
+                        <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6h14z" 
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Eliminar Workspace
+                </button>
+            </div>
+            
+            <!-- 2️⃣ BOTÓN EDITAR WORKSPACE (solo owner) -->
+            <div id="editWorkspaceContainer" style="padding: 8px 12px; margin-top: 4px; border-top: 1px solid var(--border-color, #2a2a2a);">
+                <button id="editWorkspaceBtn" 
+                        onclick="window.editarWorkspace()" 
+                        style="
+                            display: none;
+                            width: 100%;
+                            padding: 8px 16px;
+                            background: transparent;
+                            color: #e95420;
+                            border: 1.5px solid #e95420;
+                            border-radius: 50px;
+                            font-size: 0.8rem;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            letter-spacing: 0.3px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                        "
+                        onmouseover="this.style.background='#e95420'; this.style.color='#ffffff'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)';"
+                        onmouseout="this.style.background='transparent'; this.style.color='#e95420'; this.style.boxShadow='none';">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="flex-shrink: 0;">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" 
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" 
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Editar Workspace
+                </button>
+            </div>
+
+            <!-- 3️⃣ BOTÓN EDITAR CANALES (solo owner/admin) -->
+            <div id="editChannelsContainer" style="padding: 8px 12px; margin-top: 4px; border-top: 1px solid var(--border-color, #2a2a2a);">
+                <button id="editChannelsBtn" 
+                        onclick="window.editarCanales()" 
+                        style="
+                            display: none;
+                            width: 100%;
+                            padding: 8px 16px;
+                            background: transparent;
+                            color: #e95420;
+                            border: 1.5px solid #e95420;
+                            border-radius: 50px;
+                            font-size: 0.8rem;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            letter-spacing: 0.3px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                            box-sizing: border-box;
+                        "
+                        onmouseover="this.style.background='#e95420'; this.style.color='#ffffff'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)';"
+                        onmouseout="this.style.background='transparent'; this.style.color='#e95420'; this.style.boxShadow='none';">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="flex-shrink: 0;">
+                        <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 6v12M12 6v12M16 6v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="8" cy="12" r="2" fill="currentColor" opacity="0.3"/>
+                        <circle cx="12" cy="12" r="2" fill="currentColor" opacity="0.3"/>
+                        <circle cx="16" cy="12" r="2" fill="currentColor" opacity="0.3"/>
+                    </svg>
+                    Editar Canales
+                </button>
+            </div>
+
+            <!-- 4️⃣ BOTÓN ELIMINAR CANALES (solo owner/admin) - CONTENEDOR SEPARADO -->
+            <div id="deleteChannelsContainer" style="padding: 8px 12px; margin-top: 4px; border-top: 1px solid var(--border-color, #2a2a2a);">
+                <button id="deleteChannelsBtn" 
+                        onclick="window.eliminarCanales()" 
+                        style="
+                            display: none;
+                            width: 100%;
+                            padding: 8px 16px;
+                            background: transparent;
+                            color: #e95420;
+                            border: 1.5px solid #e95420;
+                            border-radius: 50px;
+                            font-size: 0.8rem;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            letter-spacing: 0.3px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                            box-sizing: border-box;
+                        "
+                        onmouseover="this.style.background='#e95420'; this.style.color='#ffffff'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)';"
+                        onmouseout="this.style.background='transparent'; this.style.color='#e95420'; this.style.boxShadow='none';">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="flex-shrink: 0;">
+                        <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6h14z" 
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+                    </svg>
+                    Eliminar Canales
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Área Principal -->
+    <div class="main-content">
+
+        <div class="top-nav">
+            <div>
+                <span class="channel-title" id="channelTitle">Selecciona un canal</span>
+                <span style="color: var(--text-muted); font-size: 0.7rem; margin-left: 8px; display: none;" id="messageCount">0 mensajes</span>
+            </div>
+            <div class="top-nav-actions">
+                <a href="/accounts/dashboard/" class="btn-terminal btn-back" style="
+                    display: inline-flex;
+                    align-items: center;
+                    padding: 8px 16px;
+                    background-color: transparent;
+                    border-radius: 4px;
+                    text-decoration: none;
+                    font-size: 13px;
+                    font-weight: bold;
+                    transition: all 0.2s ease-in-out;
+                    box-sizing: border-box;
+                    cursor: pointer;
+                    border: 1px solid #f4c430;
+                    color: #f4c430;
+                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                " onmouseover="this.style.backgroundColor='#f4c430'; this.style.color='#111111'; this.style.boxShadow='0 0 10px rgba(244,196,48,0.3)';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#f4c430'; this.style.boxShadow='none';">
+                    ← Volver al inicio
+                </a>
+            </div>
+        </div>
+
+        <div class="messages-area" id="messagesArea">
+            <div class="empty-messages">
+                <h3>Selecciona un canal</h3>
+                <p>Elige un canal para ver los mensajes</p>
+            </div>
+        </div>
+
+        <!-- INPUT DE MENSAJE CON SOPORTE PARA ARCHIVOS -->
+        <div class="message-input-area">
+            <form id="sendMessageForm" enctype="multipart/form-data">
+                <div class="input-wrapper">
+                    <input type="text" id="messageInput" 
+                           placeholder="Escribe un mensaje..." 
+                           autocomplete="off" 
+                           disabled
+                           style="font-family: 'Ubuntu Mono', 'Courier New', monospace;">
+
+                    <button type="button" class="file-upload-btn" id="fileUploadBtn" title="Adjuntar archivo" disabled>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                        </svg>
+                    </button>
+                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.zip,.rar">
+                </div>
+
+                <div class="file-preview" id="filePreview">
+                    <span class="file-name" id="previewFileName">archivo.pdf</span>
+                    <span class="file-size" id="previewFileSize">0 KB</span>
+                    <button type="button" class="remove-file" id="removeFileBtn">✕</button>
+                </div>
+
+                <button type="submit" disabled style="font-family: 'Ubuntu Mono', 'Courier New', monospace;">
+                    Enviar
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- ============================================================
+    MODALES
+    ============================================================ -->
+
+    <!-- Modal de Búsqueda -->
+    <div class="modal-overlay" id="searchModal">
+        <div class="modal-box">
+            <div class="search-input-group">
+                <div class="search-input-wrapper">
+                    <input type="text" id="searchWorkspaceInput" placeholder="Buscar workspaces...">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <button onclick="window.searchWorkspaces()">Buscar</button>
+            </div>
+
+            <div class="results-area" id="searchResults">
+                <span class="empty-state">Ingresa un nombre para buscar workspaces</span>
+            </div>
+
+            <button class="close-btn" onclick="window.closeSearchModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Edición de Mensaje -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-box modal-edit-box">
+            <h2>Editar mensaje</h2>
+            <p class="subtitle">Modifica el contenido de tu mensaje</p>
+
+            <div class="edit-input-group">
+                <textarea id="editMessageInput" rows="3" placeholder="Escribe tu mensaje..."></textarea>
+            </div>
+
+            <div class="edit-actions">
+                <button class="btn-cancel" onclick="window.closeEditModal()">Cancelar</button>
+                <button class="btn-save" onclick="window.confirmEditMessage()">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Eliminación de Mensaje -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-box modal-delete-box">
+            <div class="delete-icon">🗑️</div>
+            <h2>¿Eliminar mensaje?</h2>
+            <p class="subtitle">Esta acción no se puede deshacer.</p>
+
+            <div class="delete-actions">
+                <button class="btn-cancel" onclick="window.closeDeleteModal()">Cancelar</button>
+                <button class="btn-delete" onclick="window.confirmDeleteMessage()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Expulsión - Confirmación -->
+    <div class="modal-overlay" id="kickModal">
+        <div class="modal-box modal-kick-box">
+            <div class="kick-icon-orange">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="#e95420" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h2 id="kickTitle">¿Expulsar a este usuario?</h2>
+            <p class="subtitle" id="kickSubtitle">El usuario ya no podrá acceder a este workspace</p>
+            <div class="kick-actions">
+                <button class="btn-cancel" onclick="window.closeKickModal()">Cancelar</button>
+                <button class="btn-kick" onclick="window.confirmKickMember()">Expulsar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Expulsión - Procesando -->
+    <div class="modal-overlay" id="kickProcessingModal">
+        <div class="modal-box modal-kick-processing-box">
+            <div class="kick-processing-circle">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="#e95420" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <div class="kick-processing-spinner"></div>
+            </div>
+            <h2 id="kickProcessingTitle">Expulsando a <span id="kickProcessingUsername">usuario</span></h2>
+            <p class="subtitle">Por favor espera un momento...</p>
+        </div>
+    </div>
+
+    <!-- Modal de Abandonar Workspace -->
+    <div class="modal-overlay" id="leaveWorkspaceModal">
+        <div class="modal-box modal-leave-box">
+            <div class="leave-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h2V7zm0 8h-2v2h2v-2z" 
+                          fill="#e95420"/>
+                    <path d="M15 9l-3 3-3-3-1 1 3 3-3 3 1 1 3-3 3 3 1-1-3-3 3-3z" 
+                          fill="#e95420" opacity="0.6"/>
+                </svg>
+            </div>
+            <h2 id="leaveWorkspaceTitle">¿Abandonar workspace?</h2>
+            <p class="subtitle" id="leaveWorkspaceSubtitle">Perderás acceso a todos los canales y mensajes</p>
+            <div class="leave-actions">
+                <button class="btn-cancel" onclick="window.closeLeaveWorkspaceModal()">Cancelar</button>
+                <button class="btn-leave" onclick="window.confirmarAbandonarWorkspace()">Abandonar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Abandonar - Procesando -->
+    <div class="modal-overlay" id="leaveWorkspaceProcessingModal">
+        <div class="modal-box modal-leave-processing-box">
+            <div class="leave-processing-circle">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h2V7zm0 8h-2v2h2v-2z" 
+                          fill="#e95420"/>
+                </svg>
+                <div class="leave-processing-spinner"></div>
+            </div>
+            <h2 id="leaveWorkspaceProcessingTitle">Abandonando workspace...</h2>
+            <p class="subtitle">Por favor espera un momento</p>
+        </div>
+    </div>
+
+    <!-- Modal de Eliminar Workspace -->
+    <div class="modal-overlay" id="deleteWorkspaceModal">
+        <div class="modal-box modal-delete-workspace-box">
+            <div class="delete-workspace-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+                    <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6h14z" 
+                          stroke="#e95420" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 11v6M14 11v6" stroke="#e95420" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h2 id="deleteWorkspaceTitle">¿Eliminar workspace?</h2>
+            <p class="subtitle" id="deleteWorkspaceSubtitle">Esta acción eliminará el workspace y todos sus canales y mensajes. No se puede deshacer.</p>
+            <div class="delete-workspace-actions">
+                <button class="btn-cancel" onclick="window.closeDeleteWorkspaceModal()">Cancelar</button>
+                <button class="btn-delete-workspace" onclick="window.confirmarEliminarWorkspace()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Eliminar Workspace - Procesando -->
+    <div class="modal-overlay" id="deleteWorkspaceProcessingModal">
+        <div class="modal-box modal-delete-workspace-processing-box">
+            <div class="delete-workspace-processing-circle">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+                    <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6h14z" 
+                          stroke="#e95420" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="delete-workspace-processing-spinner"></div>
+            </div>
+            <h2 id="deleteWorkspaceProcessingTitle">Eliminando workspace...</h2>
+            <p class="subtitle">Por favor espera un momento</p>
+        </div>
+    </div>
+
+    <!-- Modal de Editar Workspace -->
+    <div class="modal-overlay" id="editWorkspaceModal">
+        <div class="modal-box modal-edit-workspace-box">
+            <div class="edit-workspace-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" 
+                        stroke="#e95420" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" 
+                        stroke="#e95420" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h2 id="editWorkspaceTitle">Editar Workspace</h2>
+            <p class="subtitle" id="editWorkspaceSubtitle">Modifica el nombre y descripción del workspace</p>
+            
+            <form id="editWorkspaceForm" style="text-align: left; margin-top: 16px;">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted, #888); margin-bottom: 4px; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
+                        Nombre del workspace
+                    </label>
+                    <input type="text" id="editWorkspaceNameInput" 
+                        style="
+                            width: 100%;
+                            padding: 10px 14px;
+                            background: #1e1e1e;
+                            border: 1px solid #333333;
+                            border-radius: 4px;
+                            color: var(--text-title, #dfdbd2);
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            font-size: 0.95rem;
+                            transition: border-color 0.2s;
+                        "
+                        onfocus="this.style.borderColor='#e95420'"
+                        onblur="this.style.borderColor='#333333'">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted, #888); margin-bottom: 4px; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
+                        Descripción
+                    </label>
+                    <textarea id="editWorkspaceDescInput" rows="3"
+                            style="
+                                width: 100%;
+                                padding: 10px 14px;
+                                background: #1e1e1e;
+                                border: 1px solid #333333;
+                                border-radius: 4px;
+                                color: var(--text-title, #dfdbd2);
+                                font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                                font-size: 0.95rem;
+                                resize: vertical;
+                                transition: border-color 0.2s;
+                            "
+                            onfocus="this.style.borderColor='#e95420'"
+                            onblur="this.style.borderColor='#333333'"></textarea>
+                </div>
+            </form>
+            
+            <div class="edit-workspace-actions">
+                <button class="btn-cancel" onclick="window.closeEditWorkspaceModal()">Cancelar</button>
+                <button class="btn-save-workspace" onclick="window.confirmarEditarWorkspace()">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EDITAR CANALES -->
+    <div class="modal-overlay" id="editChannelsModal">
+        <div class="modal-box modal-edit-channels-box">
+            <div class="edit-channels-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke="#e95420" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8 6v12M12 6v12M16 6v12" stroke="#e95420" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="8" cy="12" r="2" fill="#e95420" opacity="0.3"/>
+                    <circle cx="12" cy="12" r="2" fill="#e95420" opacity="0.3"/>
+                    <circle cx="16" cy="12" r="2" fill="#e95420" opacity="0.3"/>
+                </svg>
+            </div>
+            <h2 id="editChannelsTitle">Editar Canales</h2>
+            <p class="subtitle" id="editChannelsSubtitle">Selecciona un canal para editar su nombre</p>
+            
+            <div style="text-align: left; margin-top: 16px;">
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted, #888); margin-bottom: 8px; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
+                    Selecciona un canal:
+                </label>
+                <select id="editChannelsSelect" 
+                        style="
+                            width: 100%;
+                            padding: 10px 14px;
+                            background: #1e1e1e;
+                            border: 1px solid #333333;
+                            border-radius: 4px;
+                            color: var(--text-title, #dfdbd2);
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            font-size: 0.95rem;
+                            transition: border-color 0.2s;
+                            cursor: pointer;
+                        "
+                        onfocus="this.style.borderColor='#e95420'"
+                        onblur="this.style.borderColor='#333333'"
+                        onchange="window.cargarDatosCanal()">
+                    <option value="">-- Selecciona un canal --</option>
+                </select>
+            </div>
+            
+            <div id="editChannelForm" style="text-align: left; margin-top: 16px; display: none;">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted, #888); margin-bottom: 4px; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
+                        Nombre del canal
+                    </label>
+                    <input type="text" id="editChannelNameInput" 
+                            style="
+                                width: 100%;
+                                padding: 10px 14px;
+                                background: #1e1e1e;
+                                border: 1px solid #333333;
+                                border-radius: 4px;
+                                color: var(--text-title, #dfdbd2);
+                                font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                                font-size: 0.95rem;
+                                transition: border-color 0.2s;
+                            "
+                            onfocus="this.style.borderColor='#e95420'"
+                            onblur="this.style.borderColor='#333333'">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted, #888); margin-bottom: 4px; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
+                        Descripción del canal
+                    </label>
+                    <textarea id="editChannelDescInput" rows="2"
+                                style="
+                                    width: 100%;
+                                    padding: 10px 14px;
+                                    background: #1e1e1e;
+                                    border: 1px solid #333333;
+                                    border-radius: 4px;
+                                    color: var(--text-title, #dfdbd2);
+                                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                                    font-size: 0.95rem;
+                                    resize: vertical;
+                                    transition: border-color 0.2s;
+                                "
+                                onfocus="this.style.borderColor='#e95420'"
+                                onblur="this.style.borderColor='#333333'"></textarea>
+                </div>
+            </div>
+            
+            <div class="edit-channels-actions" style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
+                <button class="btn-cancel" 
+                        onclick="window.closeEditChannelsModal()" 
+                        style="
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            padding: 10px 28px;
+                            background: transparent;
+                            border: 1px solid #555555;
+                            border-radius: 4px;
+                            color: #aea79f;
+                            cursor: pointer;
+                            font-size: 0.85rem;
+                            font-weight: 500;
+                            transition: all 0.2s ease;
+                            min-width: 100px;
+                        "
+                        onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='#888888'; this.style.color='#dfdbd2';"
+                        onmouseout="this.style.background='transparent'; this.style.borderColor='#555555'; this.style.color='#aea79f';">
+                    Cancelar
+                </button>
+                
+                <button class="btn-save-channels" 
+                        id="saveChannelBtn" 
+                        onclick="window.confirmarEditarCanal()" 
+                        disabled
+                        style="
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            padding: 10px 28px;
+                            background: #e95420;
+                            border: 1px solid #e95420;
+                            border-radius: 4px;
+                            color: #ffffff;
+                            cursor: pointer;
+                            font-size: 0.85rem;
+                            font-weight: 600;
+                            transition: all 0.2s ease;
+                            min-width: 100px;
+                            opacity: 0.5;
+                        "
+                        onmouseover="if(!this.disabled){this.style.background='#d94a1a'; this.style.borderColor='#d94a1a'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)'; this.style.opacity='1';}"
+                        onmouseout="if(!this.disabled){this.style.background='#e95420'; this.style.borderColor='#e95420'; this.style.boxShadow='none'; this.style.opacity='1';}">
+                    Guardar cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ELIMINAR CANALES -->
+    <div class="modal-overlay" id="deleteChannelsModal">
+        <div class="modal-box modal-delete-channels-box">
+            <div class="delete-channels-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+                    <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6h14z" 
+                          stroke="#e95420" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 11v6M14 11v6M12 11v6" stroke="#e95420" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h2 id="deleteChannelsTitle">Eliminar Canal</h2>
+            <p class="subtitle" id="deleteChannelsSubtitle">Selecciona un canal para eliminarlo</p>
+            
+            <div style="text-align: left; margin-top: 16px;">
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted, #888); margin-bottom: 8px; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
+                    Selecciona un canal:
+                </label>
+                <select id="deleteChannelsSelect" 
+                        style="
+                            width: 100%;
+                            padding: 10px 14px;
+                            background: #1e1e1e;
+                            border: 1px solid #333333;
+                            border-radius: 4px;
+                            color: var(--text-title, #dfdbd2);
+                            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                            font-size: 0.95rem;
+                            transition: border-color 0.2s;
+                            cursor: pointer;
+                        "
+                        onfocus="this.style.borderColor='#e95420'"
+                        onblur="this.style.borderColor='#333333'">
+                    <option value="">-- Selecciona un canal --</option>
+                </select>
+            </div>
+            
+            <div style="text-align: left; margin-top: 12px; padding: 8px 12px; background: rgba(233, 84, 32, 0.05); border: 1px solid rgba(233, 84, 32, 0.2); border-radius: 4px; display: none;" id="deleteChannelInfo">
+                <span style="font-family: 'Ubuntu Mono', 'Courier New', monospace; font-size: 0.85rem; color: var(--text-muted, #888);">
+                    Eliminaras el canal: <strong id="deleteChannelName" style="color: #e95420;"></strong>
+                </span>
+            </div>
+            
+            <div class="delete-channels-actions" style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
+                <button class="btn-cancel" onclick="window.closeDeleteChannelsModal()" style="
+                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                    padding: 10px 28px;
+                    background: transparent;
+                    border: 1px solid #555555;
+                    border-radius: 4px;
+                    color: #aea79f;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                    min-width: 100px;
+                " onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='#888888'; this.style.color='#dfdbd2';" onmouseout="this.style.background='transparent'; this.style.borderColor='#555555'; this.style.color='#aea79f';">
+                    Cancelar
+                </button>
+                <button class="btn-delete-channel" id="deleteChannelBtn" onclick="window.confirmarEliminarCanal()" disabled style="
+                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                    padding: 10px 28px;
+                    background: #e95420;
+                    border: 1px solid #e95420;
+                    border-radius: 4px;
+                    color: #ffffff;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                    min-width: 100px;
+                    opacity: 0.5;
+                " onmouseover="if(!this.disabled){this.style.background='#d94a1a'; this.style.borderColor='#d94a1a'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)'; this.style.opacity='1';}" onmouseout="if(!this.disabled){this.style.background='#e95420'; this.style.borderColor='#e95420'; this.style.boxShadow='none'; this.style.opacity='1';}">
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ELIMINAR CANAL - PROCESANDO -->
+    <div class="modal-overlay" id="deleteChannelProcessingModal">
+        <div class="modal-box modal-delete-channel-processing-box">
+            <div class="delete-channel-processing-circle">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+                    <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6h14z" 
+                        stroke="#e95420" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="delete-channel-processing-spinner"></div>
+            </div>
+            <h2 id="deleteChannelProcessingTitle">Eliminando canal...</h2>
+            <p class="subtitle">Por favor espera un momento</p>
+        </div>
+    </div>
+    <!-- ✅ MODAL DE CONFIRMACIÓN PARA ELIMINAR CANAL -->
+    <!-- ✅ MODAL DE CONFIRMACIÓN PARA ELIMINAR CANAL -->
+    <div class="modal-overlay" id="confirmDeleteChannelModal">
+        <div class="modal-box modal-confirm-delete-channel-box" style="
+            max-width: 420px;
+            text-align: center;
+            background: #111111;
+            border: 1px solid #5e2750;
+            border-radius: 6px;
+            padding: 30px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+            position: relative;
+            width: 100%;
+        ">
+            <div class="confirm-delete-channel-icon" style="
+                margin: 0 auto 16px;
+                width: 64px;
+                height: 64px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: rgba(233, 84, 32, 0.1);
+                border: 2px solid rgba(233, 84, 32, 0.3);
+            ">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h2V7zm0 8h-2v2h2v-2z" 
+                        fill="#e95420"/>
+                    <path d="M15 9l-3 3-3-3-1 1 3 3-3 3 1 1 3-3 3 3 1-1-3-3 3-3z" 
+                        fill="#e95420" opacity="0.6"/>
+                </svg>
+            </div>
+            <h2 id="confirmDeleteChannelTitle" style="
+                font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #dfdbd2;
+                margin-bottom: 8px;
+                letter-spacing: 0.5px;
+            ">¿Eliminar canal?</h2>
+            <p class="subtitle" id="confirmDeleteChannelSubtitle" style="
+                font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                font-size: 0.85rem;
+                color: #888888;
+                margin-bottom: 24px;
+                line-height: 1.5;
+            ">Esta acción no se puede deshacer.</p>
+            <div class="confirm-delete-channel-actions" style="display: flex; gap: 12px; justify-content: center;">
+                <!-- Botón Cancelar -->
+                <button class="btn-cancel" onclick="window.closeConfirmDeleteChannelModal()" style="
+                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                    padding: 10px 28px;
+                    background: transparent;
+                    border: 1px solid #555555;
+                    border-radius: 4px;
+                    color: #aea79f;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                    min-width: 100px;
+                " onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='#888888'; this.style.color='#dfdbd2';" onmouseout="this.style.background='transparent'; this.style.borderColor='#555555'; this.style.color='#aea79f';">
+                    Cancelar
+                </button>
+                <!-- Botón Eliminar -->
+                <button class="btn-confirm-delete" onclick="window.confirmarEliminarCanalDefinitivo()" style="
+                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                    padding: 10px 28px;
+                    background: #e95420;
+                    border: 1px solid #e95420;
+                    border-radius: 4px;
+                    color: #ffffff;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                    min-width: 100px;
+                " onmouseover="this.style.background='#d94a1a'; this.style.borderColor='#d94a1a'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)';" onmouseout="this.style.background='#e95420'; this.style.borderColor='#e95420'; this.style.boxShadow='none';">
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ============================================================
+    SCRIPTS - TODOS LOS ARCHIVOS (SIN MODULES)
+    ============================================================ -->
+
+    <script src="{% static 'js/chat-logic/utils.js' %}"></script>
+    <script src="{% static 'js/chat-logic/auth.js' %}"></script>
+    <script src="{% static 'js/chat-logic/api.js' %}"></script>
+    <script src="{% static 'js/chat-logic/workspace.js' %}"></script>
+    <script src="{% static 'js/chat-logic/channels.js' %}"></script>
+    <script src="{% static 'js/chat-logic/messages.js' %}"></script>
+    <script src="{% static 'js/chat-logic/members.js' %}"></script>
+    <script src="{% static 'js/chat-logic/ui.js' %}"></script>
+    <script src="{% static 'js/chat-logic/modals.js' %}"></script>
+    <script src="{% static 'js/chat-logic/chat.js' %}"></script>
+
+</body>
+
+</html>

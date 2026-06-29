@@ -134,7 +134,7 @@ class Message(BaseModel):
         on_delete=models.CASCADE,
         related_name="messages",
     )
-    content = models.TextField()
+    content = models.TextField(blank=True, null=True)
     edited_at = models.DateTimeField(
         null=True,
         blank=True,

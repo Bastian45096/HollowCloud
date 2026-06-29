@@ -1,0 +1,100 @@
+/* ============================================================
+   LISTA DE MIEMBROS
+   ============================================================ */
+
+   #workspaceMembers {
+    margin-top: 12px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 8px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: background 0.15s;
+    margin-bottom: 2px;
+}
+
+.member-item:hover {
+    background: var(--panel-hover);
+}
+
+.member-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--panel-card-bg);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.member-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.member-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.member-name {
+    color: var(--text-main);
+    font-size: 0.8rem;
+}
+
+.member-role {
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    background: var(--panel-bg-dark);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.kick-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.member-item:hover .kick-btn {
+    opacity: 1;
+}
+
+.kick-btn svg {
+    stroke: var(--text-muted);
+    transition: stroke 0.2s;
+    width: 18px;
+    height: 18px;
+}
+
+.kick-btn:hover svg {
+    stroke: var(--ubuntu-orange);
+}
+
+.kick-btn:hover {
+    background: rgba(233, 84, 32, 0.1);
+}

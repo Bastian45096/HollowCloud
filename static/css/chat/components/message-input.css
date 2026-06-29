@@ -1,0 +1,153 @@
+/* ============================================================
+   INPUT DE MENSAJES CON ARCHIVOS
+   ============================================================ */
+
+   .message-input-area {
+    padding: 12px 20px;
+    background-color: var(--panel-sidebar);
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.message-input-area form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.input-wrapper {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background-color: var(--panel-bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px 4px 4px 12px;
+    transition: border-color 0.2s;
+    min-width: 0;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--ubuntu-orange);
+}
+
+.input-wrapper input[type="text"] {
+    flex: 1;
+    padding: 8px 0;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    outline: none;
+    min-width: 0;
+}
+
+.input-wrapper input[type="text"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.file-upload-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.file-upload-btn:hover {
+    color: var(--ubuntu-orange);
+    background: rgba(233, 84, 32, 0.1);
+}
+
+.file-upload-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+#fileInput {
+    display: none;
+}
+
+.file-preview {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    background: var(--panel-bg-dark);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    margin-top: 8px;
+    max-width: 100%;
+}
+
+.file-preview.show {
+    display: flex;
+}
+
+.file-preview .file-name {
+    font-size: 0.85rem;
+    color: var(--text-title);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-preview .file-size {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.file-preview .remove-file {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.file-preview .remove-file:hover {
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.1);
+}
+
+.message-input-area button[type="submit"] {
+    padding: 10px 24px;
+    background-color: var(--ubuntu-orange);
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.message-input-area button[type="submit"]:hover:not(:disabled) {
+    background-color: var(--ubuntu-orange-hover);
+    box-shadow: 0 0 20px var(--ubuntu-orange-glow);
+}
+
+.message-input-area button[type="submit"]:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

@@ -25,6 +25,7 @@ urlpatterns = [
     # TODA la API vive aquí
     path("api/", include("apps.api.urls")),
     path("", include("apps.accounts.urls")),
+    path("chat/", include("apps.chat.urls")),
 ]
 
 if settings.DEBUG:

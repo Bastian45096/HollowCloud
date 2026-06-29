@@ -1,0 +1,74 @@
+/* ============================================================
+   SIDEBAR DE CANALES
+   ============================================================ */
+
+   .channel-header {
+    padding: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-title);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.channel-header .workspace-name {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 400;
+}
+
+.channel-list {
+    padding: 8px 12px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.channel-list .section-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 8px 4px 4px;
+    letter-spacing: 0.5px;
+}
+
+.channel-item {
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.15s;
+}
+
+.channel-item::before {
+    content: "#";
+    color: var(--text-muted);
+    font-weight: 300;
+}
+
+.channel-item:hover {
+    background-color: var(--panel-hover);
+    color: #ffffff;
+}
+
+.channel-item.active {
+    background-color: rgba(233, 84, 32, 0.15);
+    color: var(--ubuntu-orange);
+}
+
+.channel-item.active::before {
+    color: var(--ubuntu-orange);
+}
+
+.channel-item.add {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.channel-item.add:hover {
+    color: var(--ubuntu-orange);
+}

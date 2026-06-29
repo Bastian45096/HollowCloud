@@ -1,0 +1,81 @@
+/* static/css/chat/modals/modal-edit-workspace.css */
+
+.modal-edit-workspace-box {
+    max-width: 440px;
+    text-align: center;
+}
+
+.modal-edit-workspace-box .edit-workspace-icon {
+    margin: 0 auto 16px;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(233, 84, 32, 0.1);
+    border: 2px solid rgba(233, 84, 32, 0.3);
+}
+
+.modal-edit-workspace-box h2 {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-title, #dfdbd2);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.modal-edit-workspace-box .subtitle {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: var(--text-muted, #888);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.edit-workspace-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.edit-workspace-actions .btn-cancel {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    color: #aea79f;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.edit-workspace-actions .btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #888888;
+    color: #dfdbd2;
+}
+
+.edit-workspace-actions .btn-save-workspace {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    padding: 10px 28px;
+    background: #e95420;
+    border: 1px solid #e95420;
+    border-radius: 4px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.edit-workspace-actions .btn-save-workspace:hover {
+    background: #d94a1a;
+    border-color: #d94a1a;
+    box-shadow: 0 0 20px rgba(233, 84, 32, 0.3);
+}

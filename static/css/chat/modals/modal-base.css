@@ -1,0 +1,45 @@
+/* ============================================================
+   BASE DE MODALES
+   ============================================================ */
+
+   .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-box {
+    background: var(--panel-sidebar);
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    margin: 0 auto;
+    border: 1px solid var(--ubuntu-orange);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-box h2 {
+    color: var(--text-title);
+    margin-bottom: 8px;
+}
+
+.modal-box .subtitle {
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+}

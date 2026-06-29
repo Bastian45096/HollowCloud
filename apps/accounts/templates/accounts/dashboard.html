@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HollowCloud - Panel de Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         /* Paleta Industrial: Negro Consola + Rojo CentOS Stream */
         :root {
@@ -64,7 +65,8 @@
             border: 1px solid var(--border-color);
         }
 
-        .server-icon:hover, .server-icon.active {
+        .server-icon:hover,
+        .server-icon.active {
             background-color: var(--centos-red);
             color: #ffffff;
             border-color: var(--centos-red);
@@ -173,7 +175,7 @@
             font-size: 0.88rem;
             color: var(--text-muted);
         }
-        
+
         .route-path span {
             color: #ffffff;
             font-weight: 600;
@@ -223,63 +225,11 @@
             color: #ffffff;
         }
 
-        /* --- BOTÓN DE CERRAR SESIÓN --- */
+        /* --- NAV ACTIONS (sin logout) --- */
         .nav-actions {
             display: flex;
             align-items: center;
             gap: 12px;
-        }
-
-        .logout-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 6px 14px;
-            background-color: transparent;
-            border: 1px solid var(--text-muted);
-            border-radius: 4px;
-            color: var(--text-muted);
-            font-size: 0.78rem;
-            font-weight: 500;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: 0.3px;
-            height: 32px;
-        }
-
-        .logout-button:hover {
-            border-color: var(--centos-red);
-            color: var(--centos-red);
-            background-color: rgba(201, 29, 4, 0.08);
-            box-shadow: 0 0 12px var(--centos-red-glow);
-        }
-
-        .logout-button svg {
-            width: 14px;
-            height: 14px;
-            fill: currentColor;
-            transition: transform 0.15s;
-        }
-
-        .logout-button:hover svg {
-            transform: translateX(2px);
-        }
-
-        .logout-status {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-left: 8px;
-            opacity: 0.8;
-            transition: opacity 0.3s;
-        }
-        .logout-status.error {
-            color: var(--centos-red);
-        }
-        .logout-status.success {
-            color: #00ff66;
         }
 
         /* --- RESTO DEL DASHBOARD --- */
@@ -346,6 +296,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Panel Izquierdo de Entornos -->
@@ -355,16 +306,16 @@
         <div class="server-icon" title="Asignar Entorno">+</div>
     </div>
 
-    <!-- Menú de Módulos (SOLO Panel de Control y Historial de Logs) -->
+    <!-- Menú de Módulos (SOLO Panel de Control, Historial de Logs y Chat) -->
     <div class="channels-sidebar">
         <div class="header-title">
             <span>HollowCloud</span>
-            
         </div>
         <div class="channel-list">
             <a href="#" class="channel-item active">Panel de Control</a>
             <a href="/logs/" class="channel-item">Historial de Logs</a>
-            <!-- Las opciones "Servicios Core" y "Entorno de Datos" se han eliminado -->
+            <!-- 👇 NUEVO ENLACE A CHAT 👇 -->
+            <a href="/chat/" class="channel-item">Chat</a>
         </div>
     </div>
 
@@ -375,15 +326,6 @@
 
             <!-- Acciones de la barra superior -->
             <div class="nav-actions">
-                <!-- Botón de Cerrar Sesión con estado -->
-                <button onclick="logoutUser()" class="logout-button" title="Cerrar sesión" id="logoutBtn">
-                    <svg viewBox="0 0 24 24" width="14" height="14">
-                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-                    </svg>
-                    Salir
-                </button>
-                <span id="logoutStatus" class="logout-status"></span>
-
                 <!-- Botón de Perfil -->
                 <a href="/profile/" class="profile-button" title="Perfil" id="profile-btn">
                     <img id="profile-img" src="" alt="Avatar">
@@ -398,19 +340,21 @@
                     <div class="status-dot"></div>
                     <h2>Servicio del Core Operativo</h2>
                 </div>
-                <p>La capa de datos se ha enlazado de forma exitosa con las vistas internas. El daemon del sistema responde sin demoras de red y el tráfico se gestiona mediante sockets Unix locales seguros.</p>
-                
+                <p>La capa de datos se ha enlazado de forma exitosa con las vistas internas. El daemon del sistema
+                    responde sin demoras de red y el tráfico se gestiona mediante sockets Unix locales seguros.</p>
+
                 <div class="terminal-box">
                     <span class="terminal-prompt">[root@hollowcloud-node ~]#</span> systemctl status django-app<br>
                     ● django-app.service - Core Backend Service Engine<br>
-                    &nbsp;&nbsp;&nbsp;Status: <span class="terminal-success">"active (running)"</span> since Mon 2026-06-15; HTTP/1.1 200 OK
+                    &nbsp;&nbsp;&nbsp;Status: <span class="terminal-success">"active (running)"</span> since Mon
+                    2026-06-15; HTTP/1.1 200 OK
                 </div>
             </div>
         </div>
     </div>
 
     <!-- ========================================================== -->
-    <!-- SCRIPT PARA CARGAR PERFIL Y CERRAR SESIÓN VÍA API          -->
+    <!-- SCRIPT PARA CARGAR PERFIL                                  -->
     <!-- ========================================================== -->
     <script>
         // --- Cargar perfil (avatar o iniciales) ---
@@ -457,77 +401,10 @@
             }
         }
 
-        // --- Cerrar Sesión (consumiendo API) ---
-        async function logoutUser() {
-            const btn = document.getElementById('logoutBtn');
-            const statusSpan = document.getElementById('logoutStatus');
-
-            // Deshabilitar botón para evitar doble clic
-            btn.disabled = true;
-            btn.style.opacity = '0.6';
-            statusSpan.textContent = 'Cerrando...';
-            statusSpan.className = 'logout-status';
-
-            try {
-                // Obtener refresh token del localStorage
-                const refreshToken = localStorage.getItem('refresh_token');
-
-                // Si no hay refresh token, igualmente forzamos logout local
-                if (!refreshToken) {
-                    console.warn('No hay refresh token, cerrando sesión localmente');
-                    performLocalLogout();
-                    return;
-                }
-
-                // Llamar al endpoint de logout
-                const response = await fetch('/api/APIVIEWLGT/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                    },
-                    body: JSON.stringify({
-                        refresh: refreshToken
-                    })
-                });
-
-                // Si la respuesta es exitosa (200) o error (p.ej. token ya blacklist)
-                if (response.ok) {
-                    statusSpan.textContent = 'Sesión cerrada';
-                    statusSpan.className = 'logout-status success';
-                } else {
-                    // Si da error, igualmente limpiamos local (seguridad)
-                    const errorData = await response.json().catch(() => ({}));
-                    console.warn('Logout API error:', errorData);
-                    statusSpan.textContent = 'Error en servidor, cerrando localmente';
-                    statusSpan.className = 'logout-status error';
-                }
-
-                // Siempre limpiar tokens y redirigir
-                performLocalLogout();
-
-            } catch (err) {
-                console.error('Error en logout:', err);
-                statusSpan.textContent = 'Error de red, cerrando localmente';
-                statusSpan.className = 'logout-status error';
-                // Aún así, limpiamos y redirigimos
-                performLocalLogout();
-            }
-        }
-
-        // --- Función auxiliar: limpiar tokens y redirigir ---
-        function performLocalLogout() {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            // Redirigir al login después de un breve delay para mostrar mensaje
-            setTimeout(() => {
-                window.location.href = '/login/';
-            }, 800);
-        }
-
         // --- Ejecutar al cargar la página ---
         document.addEventListener('DOMContentLoaded', loadDashboardProfile);
     </script>
 
 </body>
+
 </html>
