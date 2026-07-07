@@ -26,6 +26,7 @@ urlpatterns = [
     path("api/", include("apps.api.urls")),
     path("", include("apps.accounts.urls")),
     path("chat/", include("apps.chat.urls")),
+    path("notificaciones/", include("apps.notifications.urls")),
 ]
 
 if settings.DEBUG:

@@ -1495,6 +1495,8 @@ window.setupModalKeyListeners = function() {
             window.closeKickProcessingModal();
             window.closeLeaveWorkspaceModal();
             window.closeDeleteWorkspaceModal();
+            window.closePromoteModal();
+
             const leaveProcessing = document.getElementById('leaveWorkspaceProcessingModal');
             if (leaveProcessing) leaveProcessing.style.display = 'none';
             const deleteProcessing = document.getElementById('deleteWorkspaceProcessingModal');
@@ -1785,4 +1787,221 @@ window.confirmarEliminarCanalDefinitivo = async function() {
     }
     
     canalAEliminar = null;
+};
+
+// ============================================================
+// MODAL DE PROMOCIÓN A ADMIN
+// ============================================================
+
+// Variables globales para el modal de promoción
+let promoteData = {
+    workspaceId: null,
+    userId: null,
+    username: null
+};
+
+// Abrir modal de confirmación de promoción
+window.openPromoteModal = function(workspaceId, userId, username) {
+    // Guardar datos
+    promoteData.workspaceId = workspaceId;
+    promoteData.userId = userId;
+    promoteData.username = username;
+    
+    // Actualizar mensaje
+    const usernameSpan = document.getElementById('promoteUsername');
+    if (usernameSpan) {
+        usernameSpan.textContent = username;
+    }
+    
+    // Mostrar modal
+    const modal = document.getElementById('promoteModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+    
+    // Habilitar botón de confirmar
+    const confirmBtn = document.getElementById('confirmPromoteBtn');
+    if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirmar';
+    }
+};
+
+// Cerrar modal de promoción
+window.closePromoteModal = function() {
+    const modal = document.getElementById('promoteModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    // Limpiar datos
+    promoteData.workspaceId = null;
+    promoteData.userId = null;
+    promoteData.username = null;
+};
+
+// Confirmar promoción a admin
+window.confirmPromote = async function() {
+    const confirmBtn = document.getElementById('confirmPromoteBtn');
+    
+    // Deshabilitar botón para evitar doble clic
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Ascendiendo...';
+    }
+    
+    try {
+        const response = await fetch(`/api/chat/workspaces/${promoteData.workspaceId}/promote-admin/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: promoteData.userId })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Error al ascender a admin');
+        }
+        
+        // Cerrar modal
+        window.closePromoteModal();
+        
+        // Mostrar éxito
+        showToast('✅ Usuario ascendido a ADMIN exitosamente', 'success');
+        
+        // Recargar lista de miembros
+        const workspaceId = promoteData.workspaceId;
+        if (typeof loadWorkspaceMembers === 'function') {
+            await loadWorkspaceMembers(workspaceId);
+        } else {
+            location.reload();
+        }
+        
+    } catch (error) {
+        // Restaurar botón
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Confirmar';
+        }
+        
+        showToast('❌ Error: ' + (error.message || 'Error al ascender a admin'), 'error');
+        console.error('Error al ascender:', error);
+    }
+};
+
+// ============================================================
+// CERRAR MODALES CON ESC (agregar al setup existente)
+// ============================================================
+
+// Nota: Ya existe window.setupModalKeyListeners en tu archivo
+// Solo asegúrate de que incluya el cierre del modal de promoción
+// Si no, agrega esta línea a la función existente:
+
+// En setupModalKeyListeners, dentro del keydown 'Escape':
+// window.closePromoteModal();
+
+
+// ============================================================
+// MODAL DE REVERTIR ADMIN A MEMBER
+// ============================================================
+
+let revertData = {
+    workspaceId: null,
+    userId: null,
+    username: null
+};
+
+// Abrir modal de confirmación de reversión
+window.openRevertModal = function(workspaceId, userId, username) {
+    revertData.workspaceId = workspaceId;
+    revertData.userId = userId;
+    revertData.username = username;
+    
+    const usernameSpan = document.getElementById('revertUsername');
+    if (usernameSpan) {
+        usernameSpan.textContent = username;
+    }
+    
+    const modal = document.getElementById('revertModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+    
+    const confirmBtn = document.getElementById('confirmRevertBtn');
+    if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirmar';
+    }
+};
+
+// Cerrar modal de reversión
+window.closeRevertModal = function() {
+    const modal = document.getElementById('revertModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    revertData.workspaceId = null;
+    revertData.userId = null;
+    revertData.username = null;
+};
+
+// Confirmar reversión
+window.confirmRevert = async function() {
+    const confirmBtn = document.getElementById('confirmRevertBtn');
+    
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Revirtiendo...';
+    }
+    
+    try {
+        const response = await fetch(`/api/chat/workspaces/${revertData.workspaceId}/revert-admin/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: revertData.userId })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Error al revertir a miembro');
+        }
+        
+        window.closeRevertModal();
+        
+        if (typeof showToast === 'function') {
+            showToast('✅ Usuario revertido a MEMBER exitosamente', 'success');
+        } else {
+            alert('✅ Usuario revertido a MEMBER exitosamente');
+        }
+        
+        const workspaceId = revertData.workspaceId;
+        if (typeof loadWorkspaceMembers === 'function') {
+            await loadWorkspaceMembers(workspaceId);
+        } else if (typeof window.loadWorkspaceMembers === 'function') {
+            await window.loadWorkspaceMembers(workspaceId);
+        } else {
+            location.reload();
+        }
+        
+    } catch (error) {
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Confirmar';
+        }
+        
+        if (typeof showToast === 'function') {
+            showToast('❌ Error: ' + (error.message || 'Error al revertir'), 'error');
+        } else {
+            alert('❌ Error: ' + (error.message || 'Error al revertir'));
+        }
+        console.error('Error al revertir:', error);
+    }
 };

@@ -16,7 +16,22 @@ from apps.chat.endpoints import (
     AttachmentDeleteView,
     WorkspaceSearchView,
     WorkspaceJoinView,
-    CheckWorkspaceMembershipView
+    CheckWorkspaceMembershipView,
+    PromoverAdmin,
+    RevertirAdmin,
+    WorkspaceInviteView,
+    AcceptInvitationView,
+    RejectInvitationView,
+)
+
+from apps.notifications.endpoints import (
+    NotificationListView,           # GET /api/notifications/
+    NotificationMarkReadView,       # PATCH /api/notifications/mark-read/
+    NotificationDetailView,         # GET /api/notifications/{uuid}/, DELETE /api/notifications/{uuid}/
+    NotificationPreferenceView,     # GET /api/notifications/preferences/, PATCH /api/notifications/preferences/
+    NotificationSummaryView,        # GET /api/notifications/summary/
+    NotificationMarkSingleReadView, # PATCH /api/notifications/{uuid}/read/
+
 )
 
 urlpatterns = [
@@ -46,11 +61,21 @@ urlpatterns = [
     path("chat/workspaces/<uuid:workspace_id>/channels/<uuid:channel_id>/messages/<uuid:message_id>/attachments/<uuid:attachment_id>/", AttachmentDeleteView.as_view(), name="api-attachment-delete"),
     path("chat/workspaces/search/", WorkspaceSearchView.as_view(), name="api-workspace-search"),
     path("chat/workspaces/<uuid:workspace_id>/join/", WorkspaceJoinView.as_view(), name="api-workspace-join"),
-
-
-
+    path("chat/workspaces/<uuid:workspace_id>/promote-admin/", PromoverAdmin.as_view(), name="api-promover-admin"),
+    path("chat/workspaces/<uuid:workspace_id>/revert-admin/", RevertirAdmin.as_view(), name="api-revertir-admin"),
+    path("chat/workspaces/<uuid:workspace_id>/invite/", WorkspaceInviteView.as_view(), name="api-workspace-invite"),
+    path('chat/invitations/<uuid:membership_id>/accept/', AcceptInvitationView.as_view(), name='accept-invitation'),
+    path('chat/invitations/<uuid:membership_id>/reject/', RejectInvitationView.as_view(), name='reject-invitation'),
 
 
 
     path('chat/workspaces/<uuid:workspace_id>/members/me/', CheckWorkspaceMembershipView.as_view(), name='check-membership'),
+    
+    #Notificaciones Api
+    path('notifications/', NotificationListView.as_view(), name='notification-list'),
+    path('notifications/mark-read/', NotificationMarkReadView.as_view(), name='notification-mark-read'),
+    path('notifications/<uuid:notification_id>/', NotificationDetailView.as_view(), name='notification-detail'),
+    path('notifications/preferences/', NotificationPreferenceView.as_view(), name='notification-preference'),
+    path('notifications/summary/', NotificationSummaryView.as_view(), name='notification-summary'),
+    path('notifications/<uuid:notification_id>/read/', NotificationMarkSingleReadView.as_view(), name='notification-mark-single-read'),    
 ]

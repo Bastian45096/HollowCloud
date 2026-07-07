@@ -1,0 +1,373 @@
+/* ============================================
+   MODAL DE INVITAR MIEMBROS
+   ============================================ */
+
+/* Fondo del modal - overlay */
+#inviteModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    z-index: 99999;
+    justify-content: center;
+    align-items: center;
+    animation: modalFadeIn 0.25s ease;
+}
+
+#inviteModal.active {
+    display: flex;
+}
+
+/* Animación de entrada */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Caja del modal */
+#inviteModal .modal-box {
+    background: #1a1a1a;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    padding: 32px;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Icono del modal */
+.invite-icon {
+    margin: 0 auto 16px;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(233, 84, 32, 0.1);
+    border: 2px solid rgba(233, 84, 32, 0.3);
+    transition: all 0.3s ease;
+}
+
+.invite-icon svg {
+    color: #e95420;
+    width: 32px;
+    height: 32px;
+}
+
+/* Títulos del modal */
+#inviteModal .modal-title {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #dfdbd2;
+    margin-bottom: 8px;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+#inviteModal .modal-subtitle {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #888888;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* Grupo de input con ícono de búsqueda */
+.invite-input-group {
+    position: relative;
+    margin-top: 20px;
+}
+
+.invite-input-group .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.invite-input-group .input-wrapper svg {
+    position: absolute;
+    left: 12px;
+    width: 18px;
+    height: 18px;
+    color: #666666;
+    pointer-events: none;
+}
+
+.invite-input-group input {
+    width: 100%;
+    padding: 12px 16px 12px 40px;
+    background: #0d0d0d;
+    border: 1.5px solid #333333;
+    border-radius: 4px;
+    color: #dfdbd2;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.invite-input-group input::placeholder {
+    color: #666666;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.invite-input-group input:focus {
+    outline: none;
+    border-color: #e95420;
+    box-shadow: 0 0 0 3px rgba(233, 84, 32, 0.1);
+}
+
+.invite-input-group input:focus + svg {
+    color: #e95420;
+}
+
+/* Lista de usuarios sugeridos */
+.user-suggestions-list {
+    margin-top: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #0d0d0d;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    display: none;
+}
+
+.user-suggestions-list.active {
+    display: block;
+}
+
+.user-suggestions-list .suggestion-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #222222;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #dfdbd2;
+    gap: 12px;
+}
+
+.user-suggestions-list .suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.user-suggestions-list .suggestion-item:hover {
+    background: rgba(233, 84, 32, 0.1);
+    border-left: 3px solid #e95420;
+}
+
+.user-suggestions-list .suggestion-item .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(233, 84, 32, 0.2);
+    border: 1px solid #333333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e95420;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.user-suggestions-list .suggestion-item .user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-suggestions-list .suggestion-item .user-name {
+    font-weight: 500;
+    color: #dfdbd2;
+}
+
+.user-suggestions-list .suggestion-item .user-email {
+    font-size: 0.7rem;
+    color: #666666;
+}
+
+.user-suggestions-list .suggestion-item .user-status {
+    font-size: 0.65rem;
+    color: #666666;
+    padding: 2px 8px;
+    border: 1px solid #333333;
+    border-radius: 10px;
+}
+
+.user-suggestions-list .suggestion-item .user-status.online {
+    color: #4caf50;
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+.user-suggestions-list .suggestion-item .user-status.offline {
+    color: #666666;
+    border-color: #333333;
+}
+
+.user-suggestions-list .suggestion-item .add-btn {
+    background: transparent;
+    border: 1px solid #e95420;
+    border-radius: 4px;
+    color: #e95420;
+    padding: 4px 12px;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.user-suggestions-list .suggestion-item .add-btn:hover {
+    background: #e95420;
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(233, 84, 32, 0.3);
+}
+
+/* Mensaje cuando no hay resultados */
+.no-results {
+    padding: 16px;
+    text-align: center;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #666666;
+}
+
+/* Scroll personalizado para la lista de sugerencias */
+.user-suggestions-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.user-suggestions-list::-webkit-scrollbar-track {
+    background: #0d0d0d;
+}
+
+.user-suggestions-list::-webkit-scrollbar-thumb {
+    background: #333333;
+    border-radius: 3px;
+}
+
+.user-suggestions-list::-webkit-scrollbar-thumb:hover {
+    background: #444444;
+}
+
+/* Botones del modal */
+.invite-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.invite-actions .btn-cancel {
+    padding: 10px 28px;
+    background: transparent;
+    border: 1.5px solid #555555;
+    border-radius: 4px;
+    color: #aea79f;
+    cursor: pointer;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.invite-actions .btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #888888;
+    color: #dfdbd2;
+}
+
+.invite-actions .btn-invitar {
+    padding: 10px 28px;
+    background: #e95420;
+    border: 1.5px solid #e95420;
+    border-radius: 4px;
+    color: #ffffff;
+    cursor: pointer;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.invite-actions .btn-invitar:hover {
+    background: #d94a1a;
+    border-color: #d94a1a;
+    box-shadow: 0 0 20px rgba(233, 84, 32, 0.3);
+}
+
+.invite-actions .btn-invitar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Estado de carga del botón */
+.invite-actions .btn-invitar.loading {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.invite-actions .btn-invitar .spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+}
+
+.invite-actions .btn-invitar.loading .spinner {
+    display: inline-block;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Badge de invitación enviada */
+.invite-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(233, 84, 32, 0.15);
+    border: 1px solid rgba(233, 84, 32, 0.3);
+    border-radius: 10px;
+    color: #e95420;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.65rem;
+    margin-left: 8px;
+}

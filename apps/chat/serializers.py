@@ -22,6 +22,7 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
             'role',
             'created_at',
             'updated_at',
+            'status'
         ]
         read_only_fields = [
             'id',
@@ -207,6 +208,16 @@ class MessageSerializer(serializers.ModelSerializer):
             else:
                 avatar_url = user.avatar.url
         
+        # ✅ Obtener el rol del autor en el workspace
+        try:
+            membership = WorkspaceMember.objects.get(
+                workspace=obj.channel.workspace,
+                user=user
+            )
+            role = membership.role
+        except WorkspaceMember.DoesNotExist:
+            role = 'member'
+        
         return {
             'id': str(user.id),
             'username': user.username,
@@ -214,16 +225,12 @@ class MessageSerializer(serializers.ModelSerializer):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'avatar': avatar_url,
+            'role': role,  # 🔥 ESTO ES LO QUE SE AGREGA
         }
 
     def get_attachment_count(self, obj) -> int:
         return obj.attachments.count()
 
-# apps/chat/serializers.py
-
-# apps/chat/serializers.py
-
-# apps/chat/serializers.py
 
 class MessageCreateSerializer(serializers.ModelSerializer):
     """Serializador para crear mensajes"""
@@ -278,4 +285,98 @@ class AttachmentCreateSerializer(serializers.ModelSerializer):
         validated_data['message_id'] = self.context.get('message_id')
         return super().create(validated_data)
 
+class InviteMemberSerializer(serializers.Serializer):
+    """
+    Serializer para invitar a un miembro a un workspace.
+    """
+    email = serializers.EmailField(required=True)
+    role = serializers.ChoiceField(
+        choices=WorkspaceMember.Role.choices,
+        default=WorkspaceMember.Role.MEMBER,
+        required=False
+    )
+
+    def validate_email(self, value):
+        from apps.accounts.selectors import get_user_by_email
+        try:
+            user = get_user_by_email(email=value, use_cache=False)
+            if not user:
+                raise serializers.ValidationError("Usuario no encontrado")
+        except:
+            raise serializers.ValidationError("Usuario no encontrado")
+        return value
+
+    def validate(self, data):
+        email = data.get('email')
+        role = data.get('role', WorkspaceMember.Role.MEMBER)
+        workspace_id = self.context.get('workspace_id')
+        user = self.context.get('user')  # 🔥 Usuario que invita
         
+        from apps.accounts.selectors import get_user_by_email
+        from apps.chat.models import WorkspaceMember
+        
+        user_to_invite = get_user_by_email(email=email, use_cache=False)
+        
+        if not user_to_invite or not workspace_id:
+            return data
+        
+        # 🔥 VERIFICAR SI EL USUARIO QUE INVITA ES OWNER O ADMIN
+        inviter_membership = WorkspaceMember.objects.filter(
+            workspace_id=workspace_id,
+            user=user
+        ).first()
+        
+        if not inviter_membership:
+            raise serializers.ValidationError("No eres miembro de este workspace")
+        
+        # 🔥 SOLO OWNER PUEDE INVITAR COMO ADMIN
+        if role == WorkspaceMember.Role.ADMIN and inviter_membership.role != WorkspaceMember.Role.OWNER:
+            raise serializers.ValidationError(
+                "Solo el owner del workspace puede invitar como Administrador"
+            )
+        
+        # 🔥 VERIFICAR SI EL USUARIO YA ES MIEMBRO ACTIVO
+        if WorkspaceMember.objects.filter(
+            workspace_id=workspace_id,
+            user=user_to_invite,
+            status=WorkspaceMember.Status.ACTIVE
+        ).exists():
+            raise serializers.ValidationError(
+                "El usuario ya es miembro de este workspace"
+            )
+        
+        # 🔥 VERIFICAR SI YA TIENE INVITACIÓN PENDIENTE
+        if WorkspaceMember.objects.filter(
+            workspace_id=workspace_id,
+            user=user_to_invite,
+            status=WorkspaceMember.Status.PENDING
+        ).exists():
+            raise serializers.ValidationError(
+                "El usuario ya posee una invitación pendiente a este workspace"
+            )
+        
+        return data
+
+
+class WorkspaceMemberResponseSerializer(serializers.ModelSerializer):
+    """
+    Serializer para FORMATEAR la respuesta de un miembro invitado.
+    NO valida datos, solo los presenta.
+    """
+    
+    # Campos adicionales desde el usuario relacionado
+    user_id = serializers.UUIDField(source='user.id')
+    username = serializers.CharField(source='user.username')
+    email = serializers.EmailField(source='user.email')
+    
+    class Meta:
+        model = WorkspaceMember
+        fields = [
+            'id',          # ID de la membresía
+            'user_id',     # ID del usuario
+            'username',    # Nombre de usuario
+            'email',       # Email
+            'role',        # Rol en el workspace
+            'created_at',  # Fecha de creación
+        ]
+        read_only_fields = ['id', 'created_at']

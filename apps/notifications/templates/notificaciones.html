@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificaciones - HollowCloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/notificaciones/notifications-styles.css' %}">
+</head>
+
+<body>
+
+    <!-- ============================================================
+    NAVBAR
+    ============================================================ -->
+    
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="/accounts/dashboard/" class="btn-terminal btn-back">
+                ← Volver al inicio
+            </a>
+            <span class="logo">Hollow<span>Cloud</span></span>
+        </div>
+        <div class="navbar-right">
+            <button class="btn-mark-read" id="markAllReadBtn">
+                Marcar todas como leídas
+            </button>
+        </div>
+    </nav>
+
+    <!-- ============================================================
+    CONTENIDO PRINCIPAL
+    ============================================================ -->
+    
+    <div class="main-container">
+
+        <!-- HEADER -->
+        <div class="notifications-header">
+            <div style="display: flex; align-items: center;">
+                <h1>Notificaciones</h1>
+                <span class="badge" id="unreadBadge">0</span>
+            </div>
+        </div>
+
+        <!-- LISTA DE NOTIFICACIONES -->
+        <div id="notificationsContainer">
+            <!-- Loading -->
+            <div class="loading-state" id="loadingState">
+                <div class="spinner"></div>
+                <p>Cargando notificaciones...</p>
+            </div>
+
+            <!-- Notificaciones (se renderiza con JS) -->
+            <div class="notifications-list" id="notificationsList" style="display: none;"></div>
+
+            <!-- Estado vacío -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="icon">🔔</div>
+                <h3>No hay notificaciones</h3>
+                <p>Las notificaciones aparecerán aquí cuando tengas actividad.</p>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- ============================================================
+    SCRIPTS - Carga normal (sin type="module")
+    ============================================================ -->
+    
+    <script src="{% static 'js/notificaciones/notificaciones-api.js' %}"></script>
+    <script src="{% static 'js/notificaciones/notificaciones-ui.js' %}"></script>
+    <script src="{% static 'js/notificaciones/notifications-events.js' %}"></script>
+    <script src="{% static 'js/notificaciones/notifications-main.js' %}"></script>
+    <script src="{% static 'js/chat-logic/invite.js'%}"></script>
+</body>
+
+</html>

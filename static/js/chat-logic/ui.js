@@ -166,14 +166,26 @@ window.renderChannels = function(channels) {
 // ============================================================
 
 window.renderWorkspaceMembers = function(membersData, workspace) {
-    console.log('📋 renderWorkspaceMembers llamado');
+    console.log('renderWorkspaceMembers llamado');
     const container = document.getElementById('workspaceMembers');
     if (!container) {
-        console.warn('⚠️ workspaceMembers no encontrado');
+        console.warn('workspaceMembers no encontrado');
         return;
     }
     
-    const members = membersData?.members || [];
+    // ✅ SI membersData es null o undefined
+    if (!membersData) {
+        console.warn('⚠️ membersData es null o undefined');
+        container.innerHTML = `
+            <div style="padding: 8px 12px; color: var(--text-muted); font-size: 0.8rem; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
+                No hay miembros
+            </div>
+        `;
+        return;
+    }
+    
+    // ✅ SIN FILTRO DE STATUS - MOSTRAR TODOS LOS MIEMBROS
+    const members = membersData.members || [];
     const count = members.length;
     
     if (!Array.isArray(members) || members.length === 0) {
@@ -188,15 +200,24 @@ window.renderWorkspaceMembers = function(membersData, workspace) {
     const currentUser = getCurrentUser();
     const currentUserId = currentUser?.id;
     
+    let currentUserRole = 'member';
     let isAdmin = false;
+    let isOwner = false;
+    
     for (const member of members) {
-        if (member.user?.id === currentUserId) {
-            if (member.role === 'owner' || member.role === 'admin') {
+        if (member?.user?.id === currentUserId) {
+            currentUserRole = member.role || 'member';
+            if (member.role === 'owner') {
+                isOwner = true;
+                isAdmin = true;
+            } else if (member.role === 'admin') {
                 isAdmin = true;
             }
             break;
         }
     }
+    
+    const workspaceId = workspace?.id || getActiveWorkspaceId() || '';
     
     let html = `
         <div style="
@@ -214,18 +235,21 @@ window.renderWorkspaceMembers = function(membersData, workspace) {
     `;
     
     members.slice(0, 10).forEach(member => {
-        const user = member.user || {};
-        const username = user.username || 'Usuario';
-        const role = member.role || 'member';
-        const isOwner = role === 'owner';
-        const isAdminUser = role === 'admin';
-        const userId = user.id || '';
+        const safeMember = member || {};
+        const user = safeMember.user || {};
+        const username = user?.username || 'Usuario';
+        const role = safeMember.role || 'member';
+        const isMemberOwner = role === 'owner';
+        const isMemberAdmin = role === 'admin';
+        const userId = user?.id || '';
         const initial = username.charAt(0).toUpperCase();
         const isCurrentUser = userId === currentUserId;
         
-        const showKickButton = !isCurrentUser && isAdmin && !isOwner;
+        const canPromote = isOwner && !isMemberOwner && !isCurrentUser && !isMemberAdmin;
+        const canRevert = isOwner && !isMemberOwner && !isCurrentUser && isMemberAdmin;
+        const showKickButton = !isCurrentUser && isAdmin && !isMemberOwner;
         
-        const avatarUrl = user.avatar;
+        const avatarUrl = user?.avatar;
         let avatarHtml = '';
         
         if (avatarUrl) {
@@ -238,19 +262,19 @@ window.renderWorkspaceMembers = function(membersData, workspace) {
             `;
         } else {
             avatarHtml = `
-                <div style="width: 28px; height: 28px; border-radius: 50%; background: ${isOwner ? 'var(--accent, #e95420)' : 'rgba(233,84,32,0.4)'}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #ffffff; flex-shrink: 0; font-family: 'Ubuntu Mono', 'Courier New', monospace;">${initial}</div>
+                <div style="width: 28px; height: 28px; border-radius: 50%; background: ${isMemberOwner ? 'var(--accent, #e95420)' : 'rgba(233,84,32,0.4)'}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #ffffff; flex-shrink: 0; font-family: 'Ubuntu Mono', 'Courier New', monospace;">${initial}</div>
             `;
         }
         
         let roleText = '';
-        if (isOwner) {
+        if (isMemberOwner) {
             roleText = 'Owner';
-        } else if (isAdminUser) {
+        } else if (isMemberAdmin) {
             roleText = 'Admin';
         }
         
         const kickButtonHtml = showKickButton ? `
-            <button onclick="window.openKickModal('${userId}', '${username}')" 
+            <button onclick="event.stopPropagation(); window.openKickModal('${userId}', '${username}')" 
                     style="background: none; border: none; color: #e95420; cursor: pointer; font-size: 16px; padding: 0 4px; opacity: 0.6; transition: all 0.2s; font-weight: bold; line-height: 1; font-family: 'Ubuntu Mono', 'Courier New', monospace;" 
                     onmouseover="this.style.opacity='1'; this.style.transform='scale(1.2)';" 
                     onmouseout="this.style.opacity='0.6'; this.style.transform='scale(1)';"
@@ -259,14 +283,105 @@ window.renderWorkspaceMembers = function(membersData, workspace) {
             </button>
         ` : '';
         
+        const promoteButtonHtml = canPromote ? `
+            <button onclick="event.stopPropagation(); window.openPromoteModal('${workspaceId}', '${userId}', '${username}')" 
+                    style="
+                        background: none; 
+                        border: none; 
+                        cursor: pointer; 
+                        padding: 0 4px; 
+                        opacity: 0.6; 
+                        transition: all 0.2s; 
+                        line-height: 1; 
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    " 
+                    onmouseover="this.style.opacity='1'; this.style.transform='scale(1.15)';" 
+                    onmouseout="this.style.opacity='0.6'; this.style.transform='scale(1)';"
+                    title="Ascender a Admin a ${username}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="promoteIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#E95420" />
+                            <stop offset="100%" style="stop-color:#77216F" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="12" cy="12" r="10" stroke="url(#promoteIconGrad)" stroke-width="1.5" fill="none" opacity="0.3"/>
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" 
+                          fill="url(#promoteIconGrad)" 
+                          stroke="url(#promoteIconGrad)" 
+                          stroke-width="1.5" 
+                          stroke-linejoin="round"
+                          opacity="0.9"/>
+                    <path d="M12 7V12M12 12V17M12 12H17M12 12H7" 
+                          stroke="#ffffff" 
+                          stroke-width="1.5" 
+                          stroke-linecap="round"
+                          opacity="0.8"/>
+                </svg>
+            </button>
+        ` : '';
+        
+        const revertButtonHtml = canRevert ? `
+            <button onclick="event.stopPropagation(); window.openRevertModal('${workspaceId}', '${userId}', '${username}')" 
+                    style="
+                        background: none; 
+                        border: none; 
+                        cursor: pointer; 
+                        padding: 0 4px; 
+                        opacity: 0.6; 
+                        transition: all 0.2s; 
+                        line-height: 1; 
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    " 
+                    onmouseover="this.style.opacity='1'; this.style.transform='scale(1.15)';" 
+                    onmouseout="this.style.opacity='0.6'; this.style.transform='scale(1)';"
+                    title="Revertir a Miembro a ${username}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="revertIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#E95420" />
+                            <stop offset="100%" style="stop-color:#77216F" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="12" cy="12" r="10" stroke="url(#revertIconGrad)" stroke-width="1.5" fill="none" opacity="0.3"/>
+                    <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9" 
+                          stroke="url(#revertIconGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15 9l3 3-3 3M9 15l-3-3 3-3" 
+                          stroke="url(#revertIconGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        ` : '';
+        
         html += `
-            <div class="member-item" data-user-id="${userId}" style="display: flex; align-items: center; padding: 4px 12px; gap: 10px; border-radius: 4px; cursor: default; transition: background 0.2s ease; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
+            <div class="member-item" 
+                 data-user-id="${userId}"
+                 style="
+                    display: flex; 
+                    align-items: center; 
+                    padding: 4px 12px; 
+                    gap: 10px; 
+                    border-radius: 4px; 
+                    cursor: default; 
+                    transition: background 0.2s ease; 
+                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                "
+                onmouseover="this.style.background='rgba(233,84,32,0.05)'"
+                onmouseout="this.style.background='transparent'">
+                
                 ${avatarHtml}
                 <span style="font-size: 0.85rem; color: var(--text-title, #dfdbd2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
-                    ${username} ${isCurrentUser ? '(Tú)' : ''}
+                    ${username} ${isCurrentUser ? '(Tu)' : ''}
                 </span>
                 ${roleText ? `<span style="font-size: 0.7rem; color: var(--accent, #e95420); font-weight: 600; font-family: 'Ubuntu Mono', 'Courier New', monospace;">${roleText}</span>` : ''}
-                ${kickButtonHtml}
+                <div style="display: flex; gap: 2px; align-items: center;">
+                    ${promoteButtonHtml}
+                    ${revertButtonHtml}
+                    ${kickButtonHtml}
+                </div>
             </div>
         `;
     });
@@ -274,14 +389,13 @@ window.renderWorkspaceMembers = function(membersData, workspace) {
     if (count > 10) {
         html += `
             <div style="padding: 4px 12px; color: var(--text-muted); font-size: 0.7rem; text-align: center; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
-                +${count - 10} más
+                +${count - 10} mas
             </div>
         `;
     }
     
     container.innerHTML = html;
 };
-
 // ============================================================
 // RENDERIZAR MENSAJES
 // ============================================================
@@ -290,7 +404,7 @@ window.renderWorkspaceMembers = function(membersData, workspace) {
 // RENDERIZAR MENSAJES - CON DESCARGA Y PREVISUALIZACIÓN
 // ============================================================
 
-window.renderMessages = function(messages) {
+window.renderMessages = async function(messages) {
     console.log('📋 renderMessages llamado');
     const container = document.getElementById('messagesArea');
     if (!container) {
@@ -321,14 +435,57 @@ window.renderMessages = function(messages) {
     
     const currentUser = getCurrentUser();
     const currentUserId = currentUser?.id;
+    const workspaceId = getActiveWorkspaceId();
     
-    container.innerHTML = messages.map(message => {
+    // Obtener el rol del usuario actual
+    let currentUserRole = 'member';
+    let isAdmin = false;
+    let isOwner = false;
+    
+    try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(`/api/chat/workspaces/${workspaceId}/members/me/`, {
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.is_member) {
+                currentUserRole = data.role || 'member';
+                isAdmin = currentUserRole === 'admin';
+                isOwner = currentUserRole === 'owner';
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error obteniendo membresía:', error);
+    }
+    
+    container.innerHTML = messages.map((message) => {
         const isOwn = message.author?.id === currentUserId;
         const username = message.author?.username || 'Usuario';
         const timestamp = message.created_at ? new Date(message.created_at).toLocaleString() : '';
         const content = message.content || '';
         const messageId = message.id || '';
         const escapedContent = content.replace(/'/g, "\\'");
+        
+        // Determinar el rol del autor del mensaje
+        const authorRole = message.author?.role || 'member';
+        const isAuthorMember = authorRole === 'member';
+        
+        // Lógica de permisos para eliminar
+        let canDelete = false;
+        
+        if (isOwn) {
+            canDelete = true;
+        } else if (isOwner) {
+            canDelete = true;
+        } else if (isAdmin && isAuthorMember) {
+            canDelete = true;
+        }
         
         const attachments = message.attachments || [];
         
@@ -453,6 +610,15 @@ window.renderMessages = function(messages) {
             `;
         }
         
+        // ✅ Icono de eliminar (tacho de basura SVG personalizado)
+        const deleteIcon = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6h14z" 
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        `;
+        
         return `
             <div class="message ${isOwn ? 'own' : ''}" 
                  data-message-id="${messageId}"
@@ -489,6 +655,7 @@ window.renderMessages = function(messages) {
                             font-size: 0.7rem;
                             font-family: 'Ubuntu Mono', 'Courier New', monospace;
                         ">${timestamp}</span>
+                        
                         ${isOwn ? `
                             <button onclick="window.openEditModal('${messageId}', '${escapedContent}')" 
                                     style="
@@ -514,8 +681,10 @@ window.renderMessages = function(messages) {
                                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </button>
-                            
-                            <button onclick="window.openDeleteModal('${messageId}')" 
+                        ` : ''}
+                        
+                        ${canDelete ? `
+                            <button onclick="event.stopPropagation(); window.openDeleteModal('${messageId}')" 
                                     style="
                                         background: none;
                                         border: none;
@@ -532,11 +701,7 @@ window.renderMessages = function(messages) {
                                     onmouseover="this.style.color='#ff4444'; this.style.background='rgba(255,68,68,0.1)';"
                                     onmouseout="this.style.color='var(--text-muted, #888)'; this.style.background='transparent';"
                                     title="Eliminar mensaje">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6h14z" 
-                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                </svg>
+                                ${deleteIcon}
                             </button>
                         ` : ''}
                     </div>

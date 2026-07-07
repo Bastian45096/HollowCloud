@@ -1,0 +1,295 @@
+/* ============================================================
+   MODAL DE ASCENSIÓN A ADMIN
+   ============================================================ */
+
+.modal-promote-box {
+    max-width: 420px;
+    text-align: center;
+    background: #111111;
+    border: 1px solid #5e2750;
+    border-radius: 6px;
+    padding: 30px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+    position: relative;
+    width: 100%;
+}
+
+.promote-icon {
+    margin: 0 auto 16px;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(233, 84, 32, 0.1);
+    border: 2px solid rgba(233, 84, 32, 0.3);
+}
+
+.promote-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+#promoteTitle {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #dfdbd2;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+#promoteSubtitle {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #888888;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+#promoteUsername {
+    color: #e95420;
+}
+
+.promote-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* Botón Confirmar (naranja) */
+.btn-confirm-promote {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    padding: 10px 28px;
+    background: #e95420;
+    border: 1px solid #e95420;
+    border-radius: 4px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.btn-confirm-promote:hover {
+    background: #d94a1a;
+    border-color: #d94a1a;
+    box-shadow: 0 0 20px rgba(233, 84, 32, 0.3);
+}
+
+.btn-confirm-promote:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-confirm-promote:disabled:hover {
+    background: #e95420;
+    border-color: #e95420;
+    box-shadow: none;
+}
+
+/* Botón Cancelar (gris) */
+.btn-cancel {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    color: #aea79f;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #888888;
+    color: #dfdbd2;
+}
+
+/* ============================================================
+   MODAL OVERLAY GENERAL
+   ============================================================ */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    backdrop-filter: blur(4px);
+    animation: modalFadeIn 0.3s ease;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-box {
+    max-width: 450px;
+    width: 90%;
+    background: #111111;
+    border: 1px solid #5e2750;
+    border-radius: 6px;
+    padding: 30px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+    text-align: center;
+    animation: modalSlideUp 0.3s ease;
+}
+
+/* ============================================================
+   ANIMACIONES DEL MODAL
+   ============================================================ */
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================
+   TÍTULOS Y SUBTÍTULOS DE MODALES
+   ============================================================ */
+
+.modal-box h2 {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #dfdbd2;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.modal-box .subtitle {
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #888888;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   INPUTS DENTRO DE MODALES
+   ============================================================ */
+
+.modal-box input[type="text"],
+.modal-box textarea,
+.modal-box select {
+    width: 100%;
+    padding: 10px 14px;
+    background: #1e1e1e;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    color: #dfdbd2;
+    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.modal-box input[type="text"]:focus,
+.modal-box textarea:focus,
+.modal-box select:focus {
+    border-color: #e95420;
+    outline: none;
+}
+
+.modal-box select {
+    cursor: pointer;
+}
+
+.modal-box select option {
+    background: #1e1e1e;
+    color: #dfdbd2;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 600px) {
+    .modal-box {
+        padding: 20px;
+        width: 95%;
+    }
+    
+    .promote-actions,
+    .modal-box .delete-actions,
+    .modal-box .edit-actions,
+    .modal-box .kick-actions,
+    .modal-box .leave-actions,
+    .modal-box .delete-workspace-actions,
+    .modal-box .edit-workspace-actions,
+    .modal-box .edit-channels-actions,
+    .modal-box .delete-channels-actions,
+    .modal-box .confirm-delete-channel-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .btn-cancel,
+    .btn-confirm-promote,
+    .modal-box .btn-save,
+    .modal-box .btn-delete,
+    .modal-box .btn-kick,
+    .modal-box .btn-leave,
+    .modal-box .btn-delete-workspace,
+    .modal-box .btn-save-workspace,
+    .modal-box .btn-save-channels,
+    .modal-box .btn-delete-channel,
+    .modal-box .btn-confirm-delete {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .modal-box .promote-icon,
+    .modal-box .delete-icon,
+    .modal-box .kick-icon-orange,
+    .modal-box .leave-icon,
+    .modal-box .delete-workspace-icon,
+    .modal-box .edit-workspace-icon,
+    .modal-box .edit-channels-icon,
+    .modal-box .delete-channels-icon,
+    .modal-box .confirm-delete-channel-icon {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .modal-box .promote-icon svg,
+    .modal-box .delete-icon svg,
+    .modal-box .kick-icon-orange svg,
+    .modal-box .leave-icon svg,
+    .modal-box .delete-workspace-icon svg,
+    .modal-box .edit-workspace-icon svg,
+    .modal-box .edit-channels-icon svg,
+    .modal-box .delete-channels-icon svg,
+    .modal-box .confirm-delete-channel-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+}

@@ -58,6 +58,34 @@
                 <div id="workspaceName"></div>
                 <div class="workspace-name" id="workspaceDescription"></div>
             </div>
+            <button id="inviteMembersBtn" 
+                    onclick="window.invitarMiembros()" 
+                    style="
+                        background: transparent;
+                        border: 1.5px solid #e95420;
+                        border-radius: 4px;
+                        color: #e95420;
+                        padding: 4px 12px;
+                        font-size: 0.7rem;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                        margin-top: 2px;
+                        align-items: center;
+                        gap: 4px;
+                    "
+                    onmouseover="this.style.background='#e95420'; this.style.color='#ffffff'; this.style.boxShadow='0 0 15px rgba(233,84,32,0.3)';"
+                    onmouseout="this.style.background='transparent'; this.style.color='#e95420'; this.style.boxShadow='none';">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" style="display: inline-block; vertical-align: middle;">
+                    <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20 8v6M17 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Invitar
+            </button>
         </div>
         <div class="channel-list">
             <!-- SECCIÓN CANALES CON BOTÓN CREAR CANAL (+) -->
@@ -94,7 +122,7 @@
             </div>
             <div id="workspaceMembers"></div>
             
-            <!-- BOTÓN ABANDONAR WORKSPACE (miembros) -->
+            <!-- BOTÓN ABANDONAR WORKSPACE (miembros) - CON BORDE -->
             <div id="leaveWorkspaceContainer" style="padding: 8px 12px; margin-top: 8px; border-top: 1px solid var(--border-color, #2a2a2a);">
                 <button id="leaveWorkspaceBtn" 
                         onclick="window.abandonarWorkspace()" 
@@ -129,8 +157,8 @@
                 </button>
             </div>
             
-            <!-- 1️⃣ BOTÓN ELIMINAR WORKSPACE (solo owner) -->
-            <div id="deleteWorkspaceContainer" style="padding: 8px 12px; margin-top: 4px; border-top: 1px solid var(--border-color, #2a2a2a);">
+            <!-- 1️⃣ BOTÓN ELIMINAR WORKSPACE (solo owner) - SIN BORDE -->
+            <div id="deleteWorkspaceContainer" style="padding: 8px 12px; margin-top: 4px;">
                 <button id="deleteWorkspaceBtn" 
                         onclick="window.eliminarWorkspace()" 
                         style="
@@ -163,8 +191,8 @@
                 </button>
             </div>
             
-            <!-- 2️⃣ BOTÓN EDITAR WORKSPACE (solo owner) -->
-            <div id="editWorkspaceContainer" style="padding: 8px 12px; margin-top: 4px; border-top: 1px solid var(--border-color, #2a2a2a);">
+            <!-- 2️⃣ BOTÓN EDITAR WORKSPACE (solo owner) - SIN BORDE -->
+            <div id="editWorkspaceContainer" style="padding: 8px 12px; margin-top: 4px;">
                 <button id="editWorkspaceBtn" 
                         onclick="window.editarWorkspace()" 
                         style="
@@ -198,8 +226,8 @@
                 </button>
             </div>
 
-            <!-- 3️⃣ BOTÓN EDITAR CANALES (solo owner/admin) -->
-            <div id="editChannelsContainer" style="padding: 8px 12px; margin-top: 4px; border-top: 1px solid var(--border-color, #2a2a2a);">
+            <!-- 3️⃣ BOTÓN EDITAR CANALES (solo owner/admin) - SIN BORDE -->
+            <div id="editChannelsContainer" style="padding: 8px 12px; margin-top: 4px;">
                 <button id="editChannelsBtn" 
                         onclick="window.editarCanales()" 
                         style="
@@ -235,8 +263,8 @@
                 </button>
             </div>
 
-            <!-- 4️⃣ BOTÓN ELIMINAR CANALES (solo owner/admin) - CONTENEDOR SEPARADO -->
-            <div id="deleteChannelsContainer" style="padding: 8px 12px; margin-top: 4px; border-top: 1px solid var(--border-color, #2a2a2a);">
+            <!-- 4️⃣ BOTÓN ELIMINAR CANALES (solo owner/admin) - SIN BORDE -->
+            <div id="deleteChannelsContainer" style="padding: 8px 12px; margin-top: 4px;">
                 <button id="deleteChannelsBtn" 
                         onclick="window.eliminarCanales()" 
                         style="
@@ -782,7 +810,7 @@
             <p class="subtitle">Por favor espera un momento</p>
         </div>
     </div>
-    <!-- ✅ MODAL DE CONFIRMACIÓN PARA ELIMINAR CANAL -->
+    
     <!-- ✅ MODAL DE CONFIRMACIÓN PARA ELIMINAR CANAL -->
     <div class="modal-overlay" id="confirmDeleteChannelModal">
         <div class="modal-box modal-confirm-delete-channel-box" style="
@@ -830,7 +858,6 @@
                 line-height: 1.5;
             ">Esta acción no se puede deshacer.</p>
             <div class="confirm-delete-channel-actions" style="display: flex; gap: 12px; justify-content: center;">
-                <!-- Botón Cancelar -->
                 <button class="btn-cancel" onclick="window.closeConfirmDeleteChannelModal()" style="
                     font-family: 'Ubuntu Mono', 'Courier New', monospace;
                     padding: 10px 28px;
@@ -846,7 +873,6 @@
                 " onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='#888888'; this.style.color='#dfdbd2';" onmouseout="this.style.background='transparent'; this.style.borderColor='#555555'; this.style.color='#aea79f';">
                     Cancelar
                 </button>
-                <!-- Botón Eliminar -->
                 <button class="btn-confirm-delete" onclick="window.confirmarEliminarCanalDefinitivo()" style="
                     font-family: 'Ubuntu Mono', 'Courier New', monospace;
                     padding: 10px 28px;
@@ -865,6 +891,181 @@
             </div>
         </div>
     </div>
+
+    <!-- ============================================================
+    MODAL DE ASCENSIÓN A ADMIN (NUEVO)
+    ============================================================ -->
+    
+    <div class="modal-overlay" id="promoteModal" style="display: none;">
+        <div class="modal-box modal-promote-box" style="
+            max-width: 420px;
+            text-align: center;
+            background: #111111;
+            border: 1px solid #5e2750;
+            border-radius: 6px;
+            padding: 30px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+            position: relative;
+            width: 100%;
+        ">
+            <div class="promote-icon" style="
+                margin: 0 auto 16px;
+                width: 64px;
+                height: 64px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: rgba(233, 84, 32, 0.1);
+                border: 2px solid rgba(233, 84, 32, 0.3);
+            ">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h2V7zm0 8h-2v2h2v-2z" 
+                        fill="#e95420"/>
+                    <path d="M15 9l-3 3-3-3-1 1 3 3-3 3 1 1 3-3 3 3 1-1-3-3 3-3z" 
+                        fill="#e95420" opacity="0.6"/>
+                </svg>
+            </div>
+            <h2 id="promoteTitle" style="
+                font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #dfdbd2;
+                margin-bottom: 8px;
+                letter-spacing: 0.5px;
+            ">Ascender a Admin</h2>
+            <p class="subtitle" id="promoteSubtitle" style="
+                font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                font-size: 0.85rem;
+                color: #888888;
+                margin-bottom: 24px;
+                line-height: 1.5;
+            ">
+                ¿Estás seguro de ascender a Admin a <strong id="promoteUsername" style="color: #e95420;">usuario</strong>?
+            </p>
+            
+            <div class="promote-actions" style="display: flex; gap: 12px; justify-content: center;">
+                <button class="btn-cancel" onclick="window.closePromoteModal()" style="
+                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                    padding: 10px 28px;
+                    background: transparent;
+                    border: 1px solid #555555;
+                    border-radius: 4px;
+                    color: #aea79f;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                    min-width: 100px;
+                " onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='#888888'; this.style.color='#dfdbd2';" onmouseout="this.style.background='transparent'; this.style.borderColor='#555555'; this.style.color='#aea79f';">
+                    Cancelar
+                </button>
+                <button class="btn-confirm-promote" id="confirmPromoteBtn" onclick="window.confirmPromote()" style="
+                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                    padding: 10px 28px;
+                    background: #e95420;
+                    border: 1px solid #e95420;
+                    border-radius: 4px;
+                    color: #ffffff;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                    min-width: 100px;
+                " onmouseover="this.style.background='#d94a1a'; this.style.borderColor='#d94a1a'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)';" onmouseout="this.style.background='#e95420'; this.style.borderColor='#e95420'; this.style.boxShadow='none';">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    MODAL DE REVERTIR ADMIN A MEMBER
+    ============================================================ -->
+
+    <div class="modal-overlay" id="revertModal" style="display: none;">
+        <div class="modal-overlay-bg" onclick="closeRevertModal()"></div>
+        <div class="modal-box modal-revert-box" style="
+            max-width: 420px;
+            text-align: center;
+            background: #111111;
+            border: 1px solid #5e2750;
+            border-radius: 6px;
+            padding: 30px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+            position: relative;
+            width: 100%;
+        ">
+            <div class="revert-icon" style="
+                margin: 0 auto 16px;
+                width: 64px;
+                height: 64px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: rgba(233, 84, 32, 0.1);
+                border: 2px solid rgba(233, 84, 32, 0.3);
+            ">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h2V7zm0 8h-2v2h2v-2z" 
+                        fill="#e95420" opacity="0.6"/>
+                    <path d="M15 9l-3 3-3-3-1 1 3 3-3 3 1 1 3-3 3 3 1-1-3-3 3-3z" 
+                        fill="#e95420"/>
+                </svg>
+            </div>
+            <h2 id="revertTitle" style="
+                font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #dfdbd2;
+                margin-bottom: 8px;
+                letter-spacing: 0.5px;
+            ">Revertir a Miembro</h2>
+            <p class="subtitle" id="revertSubtitle" style="
+                font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                font-size: 0.85rem;
+                color: #888888;
+                margin-bottom: 24px;
+                line-height: 1.5;
+            ">
+                ¿Estás seguro de revertir a <strong id="revertUsername" style="color: #e95420;">usuario</strong> de ADMIN a MEMBER?
+            </p>
+            <div class="revert-actions" style="display: flex; gap: 12px; justify-content: center;">
+                <button class="btn-cancel" onclick="closeRevertModal()" style="
+                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                    padding: 10px 28px;
+                    background: transparent;
+                    border: 1px solid #555555;
+                    border-radius: 4px;
+                    color: #aea79f;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                    min-width: 100px;
+                " onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='#888888'; this.style.color='#dfdbd2';" onmouseout="this.style.background='transparent'; this.style.borderColor='#555555'; this.style.color='#aea79f';">
+                    Cancelar
+                </button>
+                <button class="btn-confirm-revert" id="confirmRevertBtn" onclick="confirmRevert()" style="
+                    font-family: 'Ubuntu Mono', 'Courier New', monospace;
+                    padding: 10px 28px;
+                    background: #e95420;
+                    border: 1px solid #e95420;
+                    border-radius: 4px;
+                    color: #ffffff;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                    min-width: 100px;
+                " onmouseover="this.style.background='#d94a1a'; this.style.borderColor='#d94a1a'; this.style.boxShadow='0 0 20px rgba(233,84,32,0.3)';" onmouseout="this.style.background='#e95420'; this.style.borderColor='#e95420'; this.style.boxShadow='none';">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ============================================================
     SCRIPTS - TODOS LOS ARCHIVOS (SIN MODULES)
     ============================================================ -->
@@ -879,7 +1080,7 @@
     <script src="{% static 'js/chat-logic/ui.js' %}"></script>
     <script src="{% static 'js/chat-logic/modals.js' %}"></script>
     <script src="{% static 'js/chat-logic/chat.js' %}"></script>
-
+    <script src="{% static 'js/chat-logic/invite.js'%}"></script>
 </body>
 
 </html>

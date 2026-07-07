@@ -175,6 +175,7 @@ def get_workspace_members(
     workspace_id: UUID,
     limit: int = 100,
     offset: int = 0,
+    include_pending: bool = False,  
 ) -> Dict[str, Any]:
     """
     Obtener miembros de un workspace con paginación.
@@ -183,6 +184,7 @@ def get_workspace_members(
         workspace_id: UUID del workspace
         limit: Límite de resultados (por defecto 100)
         offset: Offset para paginación (por defecto 0)
+        include_pending: Si es True, incluye invitaciones pendientes (por defecto False)
     
     Returns:
         Dict con miembros y metadata
@@ -196,6 +198,11 @@ def get_workspace_members(
             .select_related('user')
             .order_by('role', 'user__email')
         )
+
+       
+        if not include_pending:
+            queryset = queryset.filter(status=WorkspaceMember.Status.ACTIVE)
+            logger.info("[GET Members] Filtrando solo miembros ACTIVOS")
 
         total = queryset.count()
         members = list(queryset[offset:offset + limit])
@@ -214,18 +221,28 @@ def get_workspace_members(
         raise
 
 
-def is_workspace_member(*, workspace_id: UUID, user: User) -> bool:
+def is_workspace_member(
+    *,
+    workspace_id: UUID,
+    user: User,
+    include_pending: bool = False,  
+) -> bool:
     """
     Verificar si un usuario es miembro de un workspace.
     """
     logger.info("[GET Member] Verificando user=%s en workspace=%s", user.id, workspace_id)
 
     try:
-        is_member = WorkspaceMember.objects.filter(
+        queryset = WorkspaceMember.objects.filter(
             workspace_id=workspace_id,
             user=user
-        ).exists()
-        return is_member
+        )
+        
+        
+        if not include_pending:
+            queryset = queryset.filter(status=WorkspaceMember.Status.ACTIVE)
+        
+        return queryset.exists()
 
     except Exception as exc:
         logger.error("[GET Member] Error: %s", str(exc), exc_info=True)
@@ -580,3 +597,13 @@ def invalidate_user_workspaces_cache(*, user_id: UUID) -> None:
     cache_key = _get_cache_key("user_workspaces", str(user_id))
     cache.delete(cache_key)
     logger.info("[Cache] User workspaces invalidado: %s", user_id)
+
+def get_user_by_email_from_invite(*, email: str) -> Optional[User]:
+    """
+    Obtener un usuario por email para invitación.
+    """
+    from apps.accounts.models import User
+    try:
+        return User.objects.get(email=email)
+    except User.DoesNotExist:
+        return None

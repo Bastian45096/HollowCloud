@@ -1,0 +1,406 @@
+/* ============================================================
+   ESTILOS GENERALES
+   ============================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background: #111111;
+    color: #dfdbd2;
+    min-height: 100vh;
+}
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: #1a1a1a;
+    border-bottom: 1px solid #2a2a2a;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.navbar-left .logo {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #e95420;
+    text-decoration: none;
+}
+
+.navbar-left .logo span {
+    color: #dfdbd2;
+}
+
+/* ============================================================
+   BOTÓN VOLVER AL INICIO
+   ============================================================ */
+
+.btn-terminal {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: transparent;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    transition: all 0.2s ease-in-out;
+    box-sizing: border-box;
+    cursor: pointer;
+    border: 1px solid;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.btn-terminal.btn-back {
+    color: #f4c430;
+    border-color: #f4c430;
+}
+
+.btn-terminal.btn-back:hover {
+    background-color: #f4c430;
+    color: #111111;
+    box-shadow: 0 0 10px rgba(244, 196, 48, 0.3);
+}
+
+/* ============================================================
+   NAVBAR DERECHA
+   ============================================================ */
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.navbar-right .btn-mark-read {
+    padding: 6px 16px;
+    background: transparent;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    color: #aea79f;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: 'Courier New', Courier, monospace;
+    transition: all 0.2s ease;
+}
+
+.navbar-right .btn-mark-read:hover {
+    background: rgba(233, 84, 32, 0.1);
+    border-color: #e95420;
+    color: #e95420;
+}
+
+.navbar-right .btn-mark-read:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ============================================================
+   CONTENIDO PRINCIPAL
+   ============================================================ */
+
+.main-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+/* ============================================================
+   HEADER DE NOTIFICACIONES
+   ============================================================ */
+
+.notifications-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e95420;
+}
+
+.notifications-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #dfdbd2;
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 0.5px;
+}
+
+.notifications-header .badge {
+    background: #e95420;
+    color: #ffffff;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+/* ============================================================
+   LISTA DE NOTIFICACIONES
+   ============================================================ */
+
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.notification-item:hover {
+    background: #222222;
+    border-color: #3a3a3a;
+}
+
+.notification-item.unread {
+    border-left: 3px solid #e95420;
+    background: #1a1a1a;
+}
+
+.notification-item.read {
+    border-left: 3px solid transparent;
+    opacity: 0.7;
+}
+
+/* Icono de notificación */
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.notification-icon.info {
+    background: rgba(74, 158, 255, 0.15);
+    color: #4a9eff;
+}
+
+.notification-icon.success {
+    background: rgba(233, 84, 32, 0.15);
+    color: #E95420;
+}
+
+.notification-icon.warning {
+    background: rgba(255, 170, 0, 0.15);
+    color: #ffaa00;
+}
+
+.notification-icon.error {
+    background: rgba(255, 68, 68, 0.15);
+    color: #ff4444;
+}
+
+/* Contenido de la notificación */
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-content .title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #dfdbd2;
+    margin-bottom: 4px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.notification-content .message {
+    font-size: 0.85rem;
+    color: #aea79f;
+    line-height: 1.5;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.notification-content .time {
+    font-size: 0.7rem;
+    color: #666666;
+    margin-top: 6px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* Acciones de la notificación */
+.notification-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.notification-actions button {
+    background: none;
+    border: none;
+    color: #555555;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-actions button:hover {
+    color: #e95420;
+    background: rgba(233, 84, 32, 0.1);
+}
+
+.notification-actions button.delete:hover {
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.1);
+}
+
+/* ============================================================
+   ESTADO VACÍO
+   ============================================================ */
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-state .icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    font-size: 1.2rem;
+    color: #dfdbd2;
+    margin-bottom: 8px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.empty-state p {
+    font-size: 0.9rem;
+    color: #888888;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* ============================================================
+   LOADING
+   ============================================================ */
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.loading-state .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(233, 84, 32, 0.2);
+    border-top-color: #e95420;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 16px;
+}
+
+.loading-state p {
+    font-size: 0.9rem;
+    color: #888888;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 600px) {
+    .navbar {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .navbar-left .logo {
+        font-size: 1rem;
+    }
+
+    .btn-terminal {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+
+    .main-container {
+        padding: 16px;
+    }
+
+    .notifications-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .notification-item {
+        padding: 12px 14px;
+        flex-wrap: wrap;
+    }
+
+    .notification-icon {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        font-size: 0.9rem;
+    }
+
+    .notification-content .title {
+        font-size: 0.85rem;
+    }
+
+    .notification-content .message {
+        font-size: 0.8rem;
+    }
+
+    .notification-actions {
+        margin-left: auto;
+    }
+}

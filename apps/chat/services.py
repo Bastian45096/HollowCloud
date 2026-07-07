@@ -10,6 +10,8 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
+from datetime import timedelta
+from django.utils.text import slugify
 
 from apps.accounts.models import User
 from apps.common.exceptions import PermissionDeniedError, NotFoundError
@@ -107,53 +109,47 @@ def create_workspace(
     *,
     name: str,
     owner: User,
-    slug: str = None,
-    description: str = '',
+    description: str = "",
 ) -> Workspace:
     """
     Crear un nuevo workspace.
     """
-    logger.info("[Create Workspace] Creando workspace: %s por %s", name, owner.email)
-
-    if not name or not name.strip():
-        raise ValidationError("El nombre del workspace es requerido")
-
-    if not slug or not slug.strip():
-        slug = slugify(name)
-        logger.info(f"[Create Workspace] Slug generado automáticamente: {slug}")
-
-    if Workspace.objects.filter(slug=slug).exists():
-        raise ValidationError(f"Ya existe un workspace con el slug '{slug}'")
+    logger.info("INICIO [CreateWorkspace] - Creando workspace")
+    logger.info(f"Nombre: {name}")
+    logger.info(f"Owner: {owner.email}")
 
     try:
+       
+        slug = slugify(name)
+        
+        # Si el slug ya existe, agregar un sufijo
+        base_slug = slug
+        counter = 1
+        while Workspace.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+
         workspace = Workspace.objects.create(
-            name=name.strip(),
-            slug=slug.strip().lower(),
+            name=name,
+            slug=slug,
             owner=owner,
-            description=description.strip() if description else '',
+            description=description,
         )
 
+       
         WorkspaceMember.objects.create(
             workspace=workspace,
             user=owner,
             role=WorkspaceMember.Role.OWNER,
+            status=WorkspaceMember.Status.ACTIVE,
         )
 
-       
-        invalidate_workspace_cache(workspace_id=workspace.id)
-        
-        
-        invalidate_user_workspaces_cache(user_id=owner.id)
-
-        logger.info("[Create Workspace] Workspace creado: %s (ID: %s)", workspace.name, workspace.id)
+        logger.info(f" Workspace creado: {workspace.id} (slug: {workspace.slug})")
         return workspace
 
-    except ValidationError:
-        raise
     except Exception as exc:
-        logger.error("[Create Workspace] Error: %s", str(exc), exc_info=True)
+        logger.error(f"ERROR [CreateWorkspace] - Error: {str(exc)}", exc_info=True)
         raise
-
 
 
 @transaction.atomic
@@ -240,95 +236,131 @@ def delete_workspace(
 def add_member_to_workspace(
     *,
     workspace_id: UUID,
-    user_to_add: User,
-    added_by: User,
+    user: User,
     role: str = WorkspaceMember.Role.MEMBER,
 ) -> WorkspaceMember:
     """
-    Agregar un miembro a un workspace.
+    Agregar un usuario a un workspace (CUANDO ACEPTA LA INVITACIÓN).
     """
-    logger.info("[Add Member] Agregando %s a workspace %s por %s", 
-                user_to_add.email, workspace_id, added_by.email)
+    logger.info("INICIO [AddMemberToWorkspace] - Agregando miembro")
+    logger.info(f"Workspace ID: {workspace_id}")
+    logger.info(f"Usuario: {user.email}")
 
     workspace = get_workspace_by_id(workspace_id=workspace_id)
 
-    # Verificar permisos (solo owner o admin pueden agregar miembros)
-    if not _can_manage_workspace(user=added_by, workspace=workspace):
-        raise PermissionDeniedError("No tienes permiso para agregar miembros")
+    # Verificar que no sea ya miembro
+    if WorkspaceMember.objects.filter(workspace=workspace, user=user).exists():
+        raise ValidationError("El usuario ya es miembro de este workspace")
 
-    # Verificar que el usuario no sea ya miembro
-    if WorkspaceMember.objects.filter(workspace=workspace, user=user_to_add).exists():
-        raise ValidationError(f"El usuario {user_to_add.email} ya es miembro de este workspace")
+    # CREAR MIEMBRO CON STATUS ACTIVE
+    member = WorkspaceMember.objects.create(
+        workspace=workspace,
+        user=user,
+        role=role,
+        status=WorkspaceMember.Status.ACTIVE,  )
 
-    # Verificar que no se agregue a sí mismo (si ya es owner)
-    if user_to_add.id == workspace.owner_id:
-        raise ValidationError("El owner ya es miembro del workspace")
-
-    try:
-        member = WorkspaceMember.objects.create(
-            workspace=workspace,
-            user=user_to_add,
-            role=role,
-        )
-
-        # Invalidar cache del workspace
-        invalidate_workspace_cache(workspace_id=workspace.id)
-
-        logger.info("[Add Member] Miembro agregado: %s con rol %s", user_to_add.email, role)
-        return member
-
-    except ValidationError:
-        raise
-    except Exception as exc:
-        logger.error("[Add Member] Error: %s", str(exc), exc_info=True)
-        raise
+    logger.info(f"Miembro agregado: {member.id}")
+    return member
 
 
 @transaction.atomic
 def remove_member_from_workspace(
     *,
     workspace_id: UUID,
-    user_to_remove: User,
+    user_id: UUID,
     removed_by: User,
-) -> None:
+) -> bool:
     """
-    Remover un miembro de un workspace.
+    Eliminar un miembro de un workspace (expulsar o abandonar).
+    
+    Args:
+        workspace_id: UUID del workspace
+        user_id: UUID del usuario a eliminar
+        removed_by: Usuario que realiza la acción (puede ser el mismo)
+    
+    Returns:
+        bool: True si se eliminó correctamente
     """
-    logger.info("[Remove Member] Removiendo %s de workspace %s por %s",
-                user_to_remove.email, workspace_id, removed_by.email)
-
-    workspace = get_workspace_by_id(workspace_id=workspace_id)
-
-    # Verificar permisos
-    if not _can_manage_workspace(user=removed_by, workspace=workspace):
-        raise PermissionDeniedError("No tienes permiso para remover miembros")
-
-    # No se puede remover al owner
-    if workspace.owner_id == user_to_remove.id:
-        raise ValidationError("No se puede remover al owner del workspace")
-
-    # No se puede remover a sí mismo (si no es admin)
-    if user_to_remove.id == removed_by.id and not _can_manage_workspace(user=removed_by, workspace=workspace):
-        raise PermissionDeniedError("No puedes removerte a ti mismo si no eres admin")
+    logger.info("=" * 60)
+    logger.info("INICIO [RemoveMember] - Eliminando miembro del workspace")
+    logger.info(f"Workspace ID: {workspace_id}")
+    logger.info(f"Usuario a eliminar: {user_id}")
+    logger.info(f"Eliminado por: {removed_by.email}")
+    logger.info("=" * 60)
 
     try:
-        deleted_count, _ = WorkspaceMember.objects.filter(
-            workspace=workspace,
-            user=user_to_remove
-        ).delete()
+        workspace = get_workspace_by_id(workspace_id=workspace_id)
         
-        if deleted_count == 0:
+        # Obtener la membresía del usuario a eliminar
+        target_membership = WorkspaceMember.objects.filter(
+            workspace=workspace,
+            user_id=user_id
+        ).first()
+        
+        if not target_membership:
             raise ValidationError("El usuario no es miembro de este workspace")
-
-        # Invalidar cache del workspace
+        
+        # Guardar información para la notificación
+        target_user = target_membership.user
+        is_self_removal = str(user_id) == str(removed_by.id)
+        
+        # No se puede eliminar al owner
+        if target_membership.role == WorkspaceMember.Role.OWNER:
+            raise ValidationError("No se puede eliminar al owner del workspace")
+        
+        # Verificar permisos si no es auto-eliminación
+        if not is_self_removal:
+            remover_membership = WorkspaceMember.objects.filter(
+                workspace=workspace,
+                user=removed_by
+            ).first()
+            
+            if not remover_membership or remover_membership.role not in [WorkspaceMember.Role.OWNER, WorkspaceMember.Role.ADMIN]:
+                raise PermissionDeniedError("No tienes permiso para eliminar miembros")
+        
+        # Eliminar la membresía
+        target_membership.delete()
+        
+        # Invalidar caches
         invalidate_workspace_cache(workspace_id=workspace.id)
+        invalidate_user_workspaces_cache(user_id=user_id)
+        invalidate_user_workspaces_cache(user_id=removed_by.id)
+        
+        # 🔥 ENVIAR NOTIFICACIÓN A OWNERS Y ADMINS (si no es auto-eliminación o siempre)
+        if is_self_removal:
+            # El usuario abandonó el workspace
+            from apps.notifications.services import notify_user_left_workspace_to_admins
+            notify_user_left_workspace_to_admins(
+                user_left=target_user,
+                workspace=workspace,
+                workspace_id=workspace.id,
+            )
+            logger.info(f"✅ Notificación de abandono enviada a Owners y Admins")
+        else:
+            # El usuario fue expulsado (podrías tener otra notificación)
+            from apps.notifications.services import notify_user_expelled_from_workspace
+            notify_user_expelled_from_workspace(
+                user=target_user,
+                workspace_name=workspace.name,
+                workspace_id=workspace.id,
+                expelled_by=removed_by.username or removed_by.email,
+            )
+            logger.info(f"✅ Notificación de expulsión enviada a {target_user.email}")
 
-        logger.info("[Remove Member] Miembro removido: %s", user_to_remove.email)
+        logger.info("=" * 60)
+        logger.info(f"FIN EXITOSO [RemoveMember] - Miembro eliminado del workspace")
+        logger.info("=" * 60)
+        
+        return True
 
-    except ValidationError:
+    except ValidationError as e:
+        logger.warning(f"WARNING [RemoveMember] - Error de validación: {str(e)}")
+        raise
+    except PermissionDeniedError as e:
+        logger.warning(f"WARNING [RemoveMember] - Error de permisos: {str(e)}")
         raise
     except Exception as exc:
-        logger.error("[Remove Member] Error: %s", str(exc), exc_info=True)
+        logger.error(f"ERROR [RemoveMember] - Error: {str(exc)}", exc_info=True)
         raise
 
 
@@ -711,3 +743,80 @@ def remove_attachment(
     except Exception as exc:
         logger.error("[Remove Attachment] Error: %s", str(exc), exc_info=True)
         raise
+
+@transaction.atomic
+def invite_member_to_workspace(
+    *,
+    workspace_id: UUID,
+    invited_by: User,
+    email: str,
+    role: str = WorkspaceMember.Role.MEMBER,
+) -> WorkspaceMember:
+    """
+    Invitar a un usuario a un workspace (CREA MEMBRESÍA PENDIENTE)
+    """
+    logger.info("=" * 60)
+    logger.info("INICIO [InviteMember] - Invitando miembro al workspace")
+    logger.info(f"Workspace ID: {workspace_id}")
+    logger.info(f"Invitado por: {invited_by.email}")
+    logger.info(f"Email invitado: {email}")
+    logger.info(f"Rol: {role}")
+    logger.info("=" * 60)
+
+    # 1. Obtener workspace
+    workspace = get_workspace_by_id(workspace_id=workspace_id)
+
+    # 2. Verificar permisos
+    if not _can_manage_workspace(user=invited_by, workspace=workspace):
+        raise PermissionDeniedError("No tienes permiso para invitar miembros")
+
+    # 3. Buscar al usuario
+    from apps.accounts.selectors import get_user_by_email
+    user_to_invite = get_user_by_email(email=email, use_cache=False)
+    if not user_to_invite:
+        raise ValidationError(f"No existe un usuario con el email {email}")
+
+    # 4. 🔥 VERIFICAR QUE EL USUARIO NO TENGA UNA INVITACIÓN PENDIENTE
+    if WorkspaceMember.objects.filter(
+        workspace=workspace,
+        user=user_to_invite,
+        status=WorkspaceMember.Status.PENDING
+    ).exists():
+        logger.warning(f"WARNING [InviteMember] - Ya existe invitación pendiente para {email}")
+        raise ValidationError(f"El usuario {email} ya posee una invitación pendiente a este workspace")
+
+    # 5. Verificar que no sea ya miembro ACTIVO
+    if WorkspaceMember.objects.filter(
+        workspace=workspace,
+        user=user_to_invite,
+        status=WorkspaceMember.Status.ACTIVE
+    ).exists():
+        raise ValidationError(f"El usuario {email} ya es miembro de este workspace")
+
+    # 6. Verificar que no sea el owner
+    if user_to_invite.id == workspace.owner_id:
+        raise ValidationError("El usuario ya es el owner del workspace")
+
+    # 7. CREAR NUEVA MEMBRESÍA CON STATUS PENDING
+    member = WorkspaceMember.objects.create(
+        workspace=workspace,
+        user=user_to_invite,
+        role=role,
+        status=WorkspaceMember.Status.PENDING,
+        invited_by=invited_by,
+        expires_at=timezone.now() + timedelta(days=7),
+    )
+
+    # 8. ENVIAR NOTIFICACIÓN
+    from apps.notifications.services import notify_workspace_invite
+    notify_workspace_invite(
+        invited_user=user_to_invite,
+        invited_by=invited_by,
+        workspace_name=workspace.name,
+        workspace_id=workspace.id,
+        membership_id=member.id,
+        role=role,
+    )
+
+    logger.info(f"✅ Invitación creada: {member.id} para {email}")
+    return member

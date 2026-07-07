@@ -113,7 +113,7 @@ window.selectWorkspace = async function(workspaceId) {
     }
     
     const isOwner = currentUserId === ownerId;
-    const isAdmin = userRole === 'admin' || userRole === 'owner';
+    const isAdmin = userRole === 'admin'
     const hasChannels = channels && channels.length > 0;
     
     console.log('Usuario actual ID:', currentUserId);
@@ -1134,12 +1134,44 @@ function renderMessagesFallback(messages) {
         return;
     }
     
+    const currentUser = getCurrentUser();
+    const currentUserId = currentUser?.id;
+    
+    // ✅ Obtener el rol del usuario actual
+    const workspaceId = getActiveWorkspaceId();
+    let currentUserRole = 'member';
+    
+    // Intentar obtener el rol desde los miembros
+    const membersData = window._workspaceMembersData || null;
+    if (membersData && membersData.members) {
+        const currentMember = membersData.members.find(m => m.user?.id === currentUserId);
+        if (currentMember) {
+            currentUserRole = currentMember.role || 'member';
+        }
+    }
+    
     container.innerHTML = messages.map(message => {
+        const isOwn = message.author?.id === currentUserId;
         const username = message.author?.username || 'Usuario';
         const timestamp = message.created_at ? new Date(message.created_at).toLocaleString() : '';
         const content = message.content || '';
         const messageId = message.id || '';
         const escapedContent = content.replace(/'/g, "\\'");
+        
+        // ✅ Rol del autor
+        const authorRole = message.author?.role || 'member';
+        
+        // ✅ Lógica de permisos para eliminar
+        let canDelete = false;
+        if (isOwn) {
+            canDelete = true;
+        } else if (currentUserRole === 'owner') {
+            canDelete = true;
+        } else if (currentUserRole === 'admin') {
+            if (authorRole === 'member') {
+                canDelete = true;
+            }
+        }
         
         return `
             <div class="message" data-message-id="${messageId}" style="
@@ -1148,7 +1180,8 @@ function renderMessagesFallback(messages) {
                 padding: 12px 16px;
                 margin: 4px 16px;
                 border-radius: 8px;
-                background: transparent;
+                background: ${isOwn ? 'rgba(233,84,32,0.08)' : 'transparent'};
+                border-left: ${isOwn ? '3px solid var(--accent, #e95420)' : 'none'};
             ">
                 <div style="
                     width: 32px;
@@ -1169,6 +1202,57 @@ function renderMessagesFallback(messages) {
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
                         <span style="font-weight: 600; color: var(--text-title, #dfdbd2); font-size: 0.9rem;">${username}</span>
                         <span style="color: var(--text-muted, #888); font-size: 0.7rem;">${timestamp}</span>
+                        
+                        ${isOwn ? `
+                            <button onclick="window.openEditModal('${messageId}', '${escapedContent}')" 
+                                    style="
+                                        background: none;
+                                        border: none;
+                                        color: var(--text-muted, #888);
+                                        cursor: pointer;
+                                        padding: 2px 6px;
+                                        border-radius: 4px;
+                                        transition: all 0.2s ease;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                    "
+                                    onmouseover="this.style.color='var(--accent, #e95420)'; this.style.background='rgba(233,84,32,0.1)';"
+                                    onmouseout="this.style.color='var(--text-muted, #888)'; this.style.background='transparent';"
+                                    title="Editar mensaje">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" 
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" 
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        ` : ''}
+                        
+                        ${canDelete ? `
+                            <button onclick="window.openDeleteModal('${messageId}')" 
+                                    style="
+                                        background: none;
+                                        border: none;
+                                        color: var(--text-muted, #888);
+                                        cursor: pointer;
+                                        padding: 2px 6px;
+                                        border-radius: 4px;
+                                        transition: all 0.2s ease;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                    "
+                                    onmouseover="this.style.color='#ff4444'; this.style.background='rgba(255,68,68,0.1)';"
+                                    onmouseout="this.style.color='var(--text-muted, #888)'; this.style.background='transparent';"
+                                    title="Eliminar mensaje">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6h14z" 
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                        ` : ''}
                     </div>
                     <div style="color: var(--text-body, #dfdbd2); font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word;">${content}</div>
                 </div>
