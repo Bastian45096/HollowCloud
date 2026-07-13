@@ -719,3 +719,52 @@ def notify_user_left_workspace_to_admins(
             logger.error(f"❌ Error al crear notificación para {member.user.email}: {e}")
     
     logger.info(f"✅ {created_count} notificaciones enviadas a Owners y Admins de {workspace.name}")
+
+# apps/notifications/services.py (agregar esta función)
+
+def notify_welcome_user(user):
+    """
+    Envía notificación de bienvenida a un usuario recién registrado.
+    
+    Args:
+        user: Instancia del usuario recién creado
+    
+    Returns:
+        Notification: La notificación creada o None si hay error
+    """
+    logger.info("=" * 60)
+    logger.info("INICIO [notify_welcome_user] - Enviando notificación de bienvenida")
+    logger.info(f"Usuario ID: {user.id}")
+    logger.info(f"Email: {user.email}")
+    logger.info("=" * 60)
+    
+    try:
+        # Crear notificación de bienvenida
+        notification = create_notification(
+            user_id=user.id,
+            title="🎉 ¡Bienvenido a HollowCloud!",
+            message=f"""Hola {user.first_name or user.username} 👋
+
+Tu cuenta ha sido creada exitosamente en HollowCloud.
+1. Explora los workspaces disponibles
+2. Crea o únete a un workspace
+3. Comienza a colaborar con tu equipo
+¡Estamos felices de tenerte aquí! 🎊""",
+            notification_type=Notification.Type.SUCCESS,
+        )
+        
+        logger.info("=" * 60)
+        if notification:
+            logger.info(f"FIN EXITOSO [notify_welcome_user] - Notificación creada: {notification.id}")
+        else:
+            logger.warning("FIN [notify_welcome_user] - No se pudo crear la notificación")
+        logger.info("=" * 60)
+        
+        return notification
+        
+    except Exception as exc:
+        logger.error("=" * 60)
+        logger.error(f"ERROR [notify_welcome_user] - Error al crear notificación")
+        logger.error(f"ERROR [notify_welcome_user] - Motivo: {str(exc)}")
+        logger.error("=" * 60, exc_info=True)
+        return None

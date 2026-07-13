@@ -44,6 +44,7 @@ from apps.accounts.services import(
     activate_user,
 )
 from apps.accounts.selectors import get_user_by_id
+from apps.notifications.services import notify_welcome_user
 
 import logging
 
@@ -51,6 +52,10 @@ import logging
 # El nombre del logger será 'apps.accounts.endpoints'
 logger = logging.getLogger(__name__)
 
+
+# apps/accounts/views.py
+
+from apps.notifications.services import notify_welcome_user  # ← Importar el método
 
 class RegisterView(APIView):
     """
@@ -60,10 +65,11 @@ class RegisterView(APIView):
     Flujo:
     1. Validar datos con RegisterSerializer
     2. Crear usuario en base de datos
-    3. Generar tokens JWT (access + refresh)
-    4. Retornar usuario + tokens
+    3. Enviar notificación de bienvenida
+    4. Generar tokens JWT (access + refresh)
+    5. Retornar usuario + tokens
     """
-    permission_classes = [AllowAny]  # Cualquier persona puede registrarse
+    permission_classes = [AllowAny]
 
     def post(self, request):
         """
@@ -89,11 +95,9 @@ class RegisterView(APIView):
             logger.info(f"PROCESO [RegisterView] - Fase: {fase_actual}")
             logger.info("PROCESO [RegisterView] - Validando datos de entrada con RegisterSerializer")
             
-            # El serializer valida email único, contraseña, etc.
             serializer = RegisterSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)  # Si falla, lanza ValidationError
+            serializer.is_valid(raise_exception=True)
             
-            # Log de éxito en validación
             logger.info(f"SUCCESS [RegisterView] - Datos validados correctamente para: {serializer.validated_data.get('email')}")
 
             # ============================================================
@@ -103,24 +107,35 @@ class RegisterView(APIView):
             logger.info(f"PROCESO [RegisterView] - Fase: {fase_actual}")
             logger.info("PROCESO [RegisterView] - Creando usuario en base de datos")
             
-            # El método save() del serializer crea el usuario
-            # Esto ejecuta la lógica de create_user en el serializer
             user = serializer.save()
             
-            # Log de éxito en creación
             logger.info(f"SUCCESS [RegisterView] - Usuario creado en BD: {user.email} (ID: {user.id})")
 
             # ============================================================
-            # FASE 3: GENERACION DE TOKENS JWT
+            # FASE 3: ENVIAR NOTIFICACION DE BIENVENIDA (NUEVO)
+            # ============================================================
+            fase_actual = "Enviar notificacion de bienvenida"
+            logger.info(f"PROCESO [RegisterView] - Fase: {fase_actual}")
+            logger.info("PROCESO [RegisterView] - Enviando notificación de bienvenida al usuario")
+            
+            # ✅ Enviar notificación de bienvenida
+            # Esto NO bloquea la respuesta, el usuario no espera
+            notification = notify_welcome_user(user)
+            
+            if notification:
+                logger.info(f"SUCCESS [RegisterView] - Notificación de bienvenida enviada: {notification.id}")
+            else:
+                logger.warning("WARNING [RegisterView] - No se pudo enviar notificación de bienvenida")
+
+            # ============================================================
+            # FASE 4: GENERACION DE TOKENS JWT
             # ============================================================
             fase_actual = "Generacion de tokens JWT"
             logger.info(f"PROCESO [RegisterView] - Fase: {fase_actual}")
             logger.info("PROCESO [RegisterView] - Generando tokens de acceso y refresco")
             
-            # Genera access token y refresh token para el usuario
             tokens = generate_tokens(user=user)
             
-            # Log de éxito en generación de tokens
             logger.info(f"SUCCESS [RegisterView] - Tokens generados para: {user.email}")
 
             # ============================================================
@@ -130,14 +145,13 @@ class RegisterView(APIView):
             logger.info(f"FIN EXITOSO [RegisterView] - Usuario registrado: {user.email} (ID: {user.id})")
             logger.info("=" * 60)
             
-            # Retorna el usuario creado + sus tokens
             return Response(
                 {
                     "message": "Usuario registrado exitosamente",
                     "user": UserSerializer(user, context={'request': request}).data,
                     "tokens": tokens,
                 },
-                status=status.HTTP_201_CREATED,  # 201 Created
+                status=status.HTTP_201_CREATED,
             )
 
         except Exception as e:
@@ -149,9 +163,8 @@ class RegisterView(APIView):
             logger.error(f"ERROR [RegisterView] - Motivo: {str(e)}")
             logger.error(f"ERROR [RegisterView] - Email: {request.data.get('email', 'NO_PROVIDED')}")
             logger.error("=" * 60)
-            # exc_info=True incluye el stack trace completo en el log
             logger.error("ERROR [RegisterView] - Stack trace:", exc_info=True)
-            raise e  # Re-lanza la excepción para que DRF la maneje
+            raise e
 
     def _get_client_ip(self, request):
         """
@@ -160,9 +173,7 @@ class RegisterView(APIView):
         """
         x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded:
-            # Si hay múltiples IPs, la primera es la del cliente original
             return x_forwarded.split(',')[0]
-        # Fallback: REMOTE_ADDR es la IP directa
         return request.META.get('REMOTE_ADDR')
 
 
@@ -244,7 +255,7 @@ class LoginView(APIView):
             
             tokens = generate_tokens(user)
             
-            logger.info("SUCCESS [LoginView] - Tokens generados para: {user.email}")
+            logger.info(f"SUCCESS [LoginView] - Tokens generados para: {user.email}")
 
             # ============================================================
             # FASE 4: ACTUALIZACION DE LAST_LOGIN

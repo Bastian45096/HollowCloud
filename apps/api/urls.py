@@ -22,6 +22,7 @@ from apps.chat.endpoints import (
     WorkspaceInviteView,
     AcceptInvitationView,
     RejectInvitationView,
+    LeaveWorkspaceView,
 )
 
 from apps.notifications.endpoints import (
@@ -66,6 +67,7 @@ urlpatterns = [
     path("chat/workspaces/<uuid:workspace_id>/invite/", WorkspaceInviteView.as_view(), name="api-workspace-invite"),
     path('chat/invitations/<uuid:membership_id>/accept/', AcceptInvitationView.as_view(), name='accept-invitation'),
     path('chat/invitations/<uuid:membership_id>/reject/', RejectInvitationView.as_view(), name='reject-invitation'),
+    path('chat/workspaces/<uuid:workspace_id>/leave/', LeaveWorkspaceView.as_view(), name='leave-workspace'),
 
 
 

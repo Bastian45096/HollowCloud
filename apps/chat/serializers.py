@@ -30,8 +30,6 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
-# apps/chat/serializers.py
-
 class WorkspaceSerializer(serializers.ModelSerializer):
     """Serializador para workspaces"""
 
@@ -106,8 +104,6 @@ class WorkspaceDetailSerializer(WorkspaceSerializer):
         return ChannelSerializer(channels, many=True, context=self.context).data
 
 
-# apps/chat/serializers.py
-
 class ChannelSerializer(serializers.ModelSerializer):
     """Serializador para canales"""
 
@@ -140,7 +136,6 @@ class ChannelSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class ChannelDetailSerializer(ChannelSerializer):
-
     """
     Serializador detallado de canal con mensajes recientes
     """
@@ -151,7 +146,7 @@ class ChannelDetailSerializer(ChannelSerializer):
         fields = ChannelSerializer.Meta.fields + ['recent_messages']
 
     def get_recent_messages(self, obj):
-        messages = obj.messages.select_related('author').order_by('-created_at')[:5:0]
+        messages = obj.messages.select_related('author').order_by('-created_at')[:50]
         return MessageSerializer(messages, many=True).data
 
 class MessageAttachmentSerializer(serializers.ModelSerializer):
@@ -174,10 +169,6 @@ class MessageAttachmentSerializer(serializers.ModelSerializer):
         if obj.file and request:
             return request.build_absolute_uri(obj.file.url)
         return obj.file.url if obj.file else None
-
-# apps/chat/serializers.py
-
-# apps/chat/serializers.py
 
 class MessageSerializer(serializers.ModelSerializer):
     """
@@ -208,7 +199,6 @@ class MessageSerializer(serializers.ModelSerializer):
             else:
                 avatar_url = user.avatar.url
         
-        # ✅ Obtener el rol del autor en el workspace
         try:
             membership = WorkspaceMember.objects.get(
                 workspace=obj.channel.workspace,
@@ -225,7 +215,7 @@ class MessageSerializer(serializers.ModelSerializer):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'avatar': avatar_url,
-            'role': role,  # 🔥 ESTO ES LO QUE SE AGREGA
+            'role': role,
         }
 
     def get_attachment_count(self, obj) -> int:
@@ -242,10 +232,6 @@ class MessageCreateSerializer(serializers.ModelSerializer):
         fields = ['content']
 
     def validate(self, data):
-        """
-        Validación personalizada: permitir content vacío si hay archivo
-        """
-       
         content = data.get('content', '')
         
         if content is None:
@@ -308,19 +294,17 @@ class InviteMemberSerializer(serializers.Serializer):
 
     def validate(self, data):
         email = data.get('email')
-        role = data.get('role', WorkspaceMember.Role.MEMBER)
+        role = data.get('role', WorkspaceMember.Role.MEMBER) # <-- Se eliminó la importación local redundante
         workspace_id = self.context.get('workspace_id')
-        user = self.context.get('user')  # 🔥 Usuario que invita
+        user = self.context.get('user')
         
         from apps.accounts.selectors import get_user_by_email
-        from apps.chat.models import WorkspaceMember
         
         user_to_invite = get_user_by_email(email=email, use_cache=False)
         
         if not user_to_invite or not workspace_id:
             return data
         
-        # 🔥 VERIFICAR SI EL USUARIO QUE INVITA ES OWNER O ADMIN
         inviter_membership = WorkspaceMember.objects.filter(
             workspace_id=workspace_id,
             user=user
@@ -329,13 +313,11 @@ class InviteMemberSerializer(serializers.Serializer):
         if not inviter_membership:
             raise serializers.ValidationError("No eres miembro de este workspace")
         
-        # 🔥 SOLO OWNER PUEDE INVITAR COMO ADMIN
         if role == WorkspaceMember.Role.ADMIN and inviter_membership.role != WorkspaceMember.Role.OWNER:
             raise serializers.ValidationError(
                 "Solo el owner del workspace puede invitar como Administrador"
             )
         
-        # 🔥 VERIFICAR SI EL USUARIO YA ES MIEMBRO ACTIVO
         if WorkspaceMember.objects.filter(
             workspace_id=workspace_id,
             user=user_to_invite,
@@ -345,7 +327,6 @@ class InviteMemberSerializer(serializers.Serializer):
                 "El usuario ya es miembro de este workspace"
             )
         
-        # 🔥 VERIFICAR SI YA TIENE INVITACIÓN PENDIENTE
         if WorkspaceMember.objects.filter(
             workspace_id=workspace_id,
             user=user_to_invite,
@@ -364,7 +345,6 @@ class WorkspaceMemberResponseSerializer(serializers.ModelSerializer):
     NO valida datos, solo los presenta.
     """
     
-    # Campos adicionales desde el usuario relacionado
     user_id = serializers.UUIDField(source='user.id')
     username = serializers.CharField(source='user.username')
     email = serializers.EmailField(source='user.email')
@@ -372,11 +352,40 @@ class WorkspaceMemberResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkspaceMember
         fields = [
-            'id',          # ID de la membresía
-            'user_id',     # ID del usuario
-            'username',    # Nombre de usuario
-            'email',       # Email
-            'role',        # Rol en el workspace
-            'created_at',  # Fecha de creación
+            'id',
+            'user_id',
+            'username',
+            'email',
+            'role',
+            'created_at',
         ]
         read_only_fields = ['id', 'created_at']
+
+
+class LeaveWorkspaceResponseSerializer(serializers.Serializer):
+    """
+    Serializer para la respuesta de abandono de workspace.
+    """
+    success = serializers.BooleanField(help_text="Indica si la operación fue exitosa.")
+    message = serializers.CharField(help_text="Mensaje descriptivo del resultado.")
+    action_performed = serializers.BooleanField(
+        help_text="True si se eliminó la membresía, False si ya no era miembro."
+    )
+    workspace_name = serializers.CharField(
+        required=False, 
+        help_text="Nombre del workspace abandonado (solo si action_performed es True)."
+    )
+
+class RevertAdminResponseSerializer(serializers.Serializer):
+    """
+    Contrato de respuesta para la reversión de Admin a Member.
+    """
+    success = serializers.BooleanField()
+    message = serializers.CharField()
+    action_performed = serializers.BooleanField(
+        help_text="Indica si se realizó un cambio real en la BD."
+    )
+    user_email = serializers.EmailField(required=False)
+    workspace_name = serializers.CharField(required=False)
+    old_role = serializers.CharField(required=False)
+    new_role = serializers.CharField(required=False)

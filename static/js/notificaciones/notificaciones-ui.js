@@ -20,7 +20,50 @@ function getTimeAgo(dateString) {
 // ICONOS PERSONALIZADOS
 // ============================================================
 
+// ============================================================
+// ICONOS PERSONALIZADOS
+// ============================================================
+
 function getNotificationIcon(type, extraData = {}) {
+    // 🔥 NUEVO: BIENVENIDA
+    if (extraData && extraData.type === 'welcome') {
+        return `
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 28px; height: 28px; display: block; flex-shrink: 0;">
+                <defs>
+                    <linearGradient id="welcomeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#E95420"/>
+                        <stop offset="100%" style="stop-color:#F6A820"/>
+                    </linearGradient>
+                </defs>
+                
+                <!-- Círculo de fondo -->
+                <circle cx="12" cy="12" r="11" fill="#2C2C2C" opacity="0.3"/>
+                <circle cx="12" cy="12" r="11" stroke="url(#welcomeGrad)" stroke-width="1.5" opacity="0.4"/>
+                
+                <!-- Círculo interior punteado -->
+                <circle cx="12" cy="12" r="8.5" stroke="url(#welcomeGrad)" stroke-width="0.8" stroke-dasharray="4,3" fill="none" opacity="0.4"/>
+                
+                <!-- Estrella central -->
+                <path d="M12 2L14 8L20 8L15.5 12L17.5 18L12 14.5L6.5 18L8.5 12L4 8L10 8L12 2Z" 
+                      stroke="url(#welcomeGrad)" stroke-width="1.2" fill="none" stroke-linejoin="round" opacity="0.7"/>
+                
+                <!-- Puntas decorativas -->
+                <path d="M12 2L12 6" stroke="#E95420" stroke-width="1" stroke-linecap="round" opacity="0.3"/>
+                <path d="M20 8L16 10" stroke="#E95420" stroke-width="1" stroke-linecap="round" opacity="0.3"/>
+                <path d="M17.5 18L14 15" stroke="#E95420" stroke-width="1" stroke-linecap="round" opacity="0.3"/>
+                <path d="M6.5 18L10 15" stroke="#E95420" stroke-width="1" stroke-linecap="round" opacity="0.3"/>
+                <path d="M4 8L8 10" stroke="#E95420" stroke-width="1" stroke-linecap="round" opacity="0.3"/>
+                
+                <!-- Círculo interior -->
+                <circle cx="12" cy="12" r="3" stroke="url(#welcomeGrad)" stroke-width="1" fill="none" opacity="0.5"/>
+                <circle cx="12" cy="12" r="1.2" fill="url(#welcomeGrad)" opacity="0.7"/>
+                
+                <!-- Marca de verificación -->
+                <path d="M9 12L11.5 14.5L16 10" stroke="url(#welcomeGrad)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+            </svg>
+        `;
+    }
+    
     // 🔥 SI ES ABANDONO DE WORKSPACE
     if (extraData && extraData.type === 'user_left_workspace') {
         return `
@@ -161,25 +204,25 @@ function renderNotifications(notifications, unreadCount) {
     list.innerHTML = notifications.map(notification => {
         const isUnread = !notification.is_read;
         
-        // 🔥 OBTENER parsed_data DEL SERIALIZER
+        //  OBTENER parsed_data DEL SERIALIZER
         const extraData = notification.parsed_data || {};
         
-        // ✅ SI EXTRA DATA TIENE TEXTO, USARLO (PARA INVITACIONES Y ABANDONOS)
+        //  SI EXTRA DATA TIENE TEXTO, USARLO (PARA INVITACIONES Y ABANDONOS)
         let displayMessage = notification.message;
         if (extraData && extraData.text) {
             displayMessage = extraData.text;
         }
         
-        // 🔥 DETECTAR SI ES NOTIFICACIÓN DE ABANDONO
+        //  DETECTAR SI ES NOTIFICACIÓN DE ABANDONO
         const isLeaveNotification = extraData.type === 'user_left_workspace';
         
         const icon = getNotificationIcon(notification.notification_type, extraData);
         const timeAgo = notification.time_ago || getTimeAgo(notification.created_at);
         
-        // ✅ DETECTAR SI ES INVITACIÓN
+        //  DETECTAR SI ES INVITACIÓN
         const isInvitation = extraData.type === 'workspace_invite' || extraData.membership_id;
         
-        // ✅ BOTONES DE INVITACIÓN (solo si no es abandono)
+        // BOTONES DE INVITACIÓN (solo si no es abandono)
         let actionButtons = '';
         if (isInvitation && !isLeaveNotification && isUnread && extraData.membership_id) {
             actionButtons = `

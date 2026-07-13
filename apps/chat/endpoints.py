@@ -21,7 +21,9 @@ from apps.chat.serializers import (
     MessageUpdateSerializer,
     MessageAttachmentSerializer,
     InviteMemberSerializer,
-    WorkspaceMemberResponseSerializer
+    WorkspaceMemberResponseSerializer,
+    LeaveWorkspaceResponseSerializer,
+    RevertAdminResponseSerializer,
 )
 from .services import (
     create_workspace,
@@ -39,7 +41,9 @@ from .services import (
     add_attachment_to_message,
     remove_attachment,
     join_workspace,
-    invite_member_to_workspace
+    invite_member_to_workspace,
+    service_leave_workspace,
+    service_revert_admin_to_member
 )
 from .selectors import (
     get_user_workspaces,
@@ -321,6 +325,38 @@ class WorkspaceMembersView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+class LeaveWorkspaceView(APIView):
+    """
+    Endpoint para que un usuario abandone voluntariamente un workspace.
+    URL: POST /api/workspaces/<id>/leave/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, workspace_id):
+        try:
+            result = service_leave_workspace(
+                user=request.user,
+                workspace_id=workspace_id
+            )
+            
+            return Response(
+                LeaveWorkspaceResponseSerializer(result).data,
+                status=status.HTTP_200_OK
+            )
+
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
+            
+        except PermissionError as e:
+            return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
+            
+        except Exception as e:
+            logger.error(f"Error al abandonar workspace: {e}")
+            return Response(
+                {'error': 'Error interno al procesar la solicitud'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 class WorkspaceMemberRoleView(APIView):
     """Actualizar rol de un miembro"""
     permission_classes = [IsAuthenticated]
@@ -445,8 +481,6 @@ class WorkspaceJoinView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-from apps.chat.models import Workspace, WorkspaceMember
-
 class CheckWorkspaceMembershipView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -460,12 +494,12 @@ class CheckWorkspaceMembershipView(APIView):
                     user=request.user
                 )
                 
-                # ✅ Devolver el rol correcto
+                
                 return Response({
                     'is_member': True,
                     'workspace_id': str(workspace_id),
                     'user_id': str(request.user.id),
-                    'role': membership.role,  # 🔥 ESTO ES LO QUE FALTA
+                    'role': membership.role,  
                     'email': request.user.email,
                 })
                 
@@ -685,166 +719,97 @@ class RevertirAdmin(APIView):
     """
     Endpoint para revertir un ADMIN a MEMBER.
     Solo el OWNER del workspace puede hacer esto.
+    URL: POST /api/workspaces/<id>/revert-admin/
     """
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request, workspace_id):
         # ============================================================
-        # 1. LOG DE INICIO DE PETICIÓN
+        # FASE 1: LOG DE INICIO DE PETICIÓN (TRAZABILIDAD)
         # ============================================================
         logger.info("=" * 60)
         logger.info(f"🔄 [REVERTIR-ADMIN] Iniciando reversión de admin")
         logger.info(f"📋 [REVERTIR-ADMIN] Usuario solicitante: {request.user.email} (ID: {request.user.id})")
         logger.info(f"📋 [REVERTIR-ADMIN] Workspace ID: {workspace_id}")
         logger.info("=" * 60)
-        
+
         # ============================================================
-        # 2. VALIDAR user_id EN EL BODY
+        # FASE 2: VALIDACIÓN TEMPRANA DE INPUTS
         # ============================================================
         user_id = request.data.get('user_id')
-        
+
         if not user_id:
             logger.warning(f"⚠️ [REVERTIR-ADMIN] user_id no proporcionado en el body")
             return Response(
                 {'error': 'user_id es requerido en el body de la petición'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         logger.info(f"✅ [REVERTIR-ADMIN] user_id recibido: {user_id}")
-        
+
         try:
             # ============================================================
-            # 3. OBTENER WORKSPACE Y USUARIO
+            # FASE 3: EJECUCIÓN DEL SERVICIO (LÓGICA DE NEGOCIO)
             # ============================================================
-            workspace = Workspace.objects.get(id=workspace_id)
-            logger.info(f"✅ [REVERTIR-ADMIN] Workspace encontrado: {workspace.name}")
+            # El servicio se encarga de:
+            # 1. Obtener Workspace y Usuario (con logs internos)
+            # 2. Validar permisos de OWNER
+            # 3. Validar reglas de negocio (no revertir owner, idempotencia)
+            # 4. Ejecutar cambio de rol (transaccional)
+            # 5. Disparar notificación (efecto secundario resiliente)
             
-            user = User.objects.get(id=user_id)
-            logger.info(f"✅ [REVERTIR-ADMIN] Usuario objetivo encontrado: {user.email}")
+            logger.info(f"⚙️ [REVERTIR-ADMIN] Delegando ejecución al servicio...")
             
-            # ============================================================
-            # 4. VERIFICAR QUE EL SOLICITANTE ES OWNER
-            # ============================================================
-            try:
-                requester_membership = WorkspaceMember.objects.get(
-                    workspace=workspace,
-                    user=request.user
-                )
-            except WorkspaceMember.DoesNotExist:
-                logger.warning(f"⚠️ [REVERTIR-ADMIN] Solicitante NO es miembro")
-                return Response(
-                    {'error': 'No eres miembro de este workspace'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            
-            if requester_membership.role != WorkspaceMember.Role.OWNER:
-                logger.warning(f"⚠️ [REVERTIR-ADMIN] Solicitante NO es OWNER. Rol: {requester_membership.role}")
-                return Response(
-                    {'error': 'Solo el owner del workspace puede revertir admins'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            
-            logger.info(f"✅ [REVERTIR-ADMIN] Solicitante es OWNER")
-            
-            # ============================================================
-            # 5. VERIFICAR QUE EL USUARIO OBJETIVO ES MIEMBRO
-            # ============================================================
-            is_member = WorkspaceMember.objects.filter(
-                workspace=workspace,
-                user=user
-            ).exists()
-            
-            if not is_member:
-                logger.warning(f"⚠️ [REVERTIR-ADMIN] Usuario objetivo NO es miembro")
-                return Response(
-                    {'error': 'El usuario no es miembro del workspace'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            # ============================================================
-            # 6. OBTENER EL MIEMBRO Y VERIFICAR ROL ACTUAL
-            # ============================================================
-            member = WorkspaceMember.objects.get(workspace=workspace, user=user)
-            logger.info(f"📋 [REVERTIR-ADMIN] Rol actual del usuario: {member.role}")
-            
-            # ============================================================
-            # 7. VERIFICAR QUE SEA ADMIN
-            # ============================================================
-            if member.role == WorkspaceMember.Role.OWNER:
-                logger.warning(f"⚠️ [REVERTIR-ADMIN] El usuario es OWNER, no se puede revertir")
-                return Response(
-                    {'error': 'No puedes revertir al owner del workspace'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            if member.role != WorkspaceMember.Role.ADMIN:
-                logger.info(f"ℹ️ [REVERTIR-ADMIN] El usuario ya es MEMBER, no se requiere acción")
-                return Response({
-                    'success': True,
-                    'message': 'Este usuario ya es miembro',
-                    'user_id': str(user_id),
-                    'workspace_id': str(workspace_id)
-                }, status=status.HTTP_200_OK)
-            
-            # ============================================================
-            # 8. REVERTIR A MEMBER
-            # ============================================================
-            logger.info(f"🔄 [REVERTIR-ADMIN] Reviertiendo a {user.email} de 'admin' a 'member'...")
-            
-            member.role = WorkspaceMember.Role.MEMBER
-            member.save()
-            
-            logger.info(f"✅ [REVERTIR-ADMIN] Usuario {user.email} revertido a MEMBER exitosamente")
-            
-            # ============================================================
-            # 9. ENVIAR NOTIFICACION AL USUARIO DESCENDIDO
-            # ============================================================
-            try:
-                from apps.notifications.services import notify_user_reverted_to_member
-                notify_user_reverted_to_member(
-                    user=user,
-                    workspace_name=workspace.name,
-                    reverted_by=request.user.username,
-                )
-                logger.info(f"📧 [REVERTIR-ADMIN] Notificacion enviada a {user.email}")
-            except Exception as e:
-                logger.error(f"Error al enviar notificacion de descenso: {e}")
-            
-            # ============================================================
-            # 10. RESPUESTA EXITOSA
-            # ============================================================
-            logger.info("=" * 60)
-            logger.info(f"🎉 [REVERTIR-ADMIN] ¡REVERSIÓN EXITOSA!")
-            logger.info(f"📋 [REVERTIR-ADMIN] Usuario: {user.email} → MEMBER")
-            logger.info(f"📋 [REVERTIR-ADMIN] Workspace: {workspace.name}")
-            logger.info("=" * 60)
-            
-            return Response({
-                'success': True,
-                'message': f'Usuario {user.email} revertido a miembro',
-                'user_id': str(user_id),
-                'user_email': user.email,
-                'workspace_id': str(workspace_id),
-                'workspace_name': workspace.name,
-                'role': member.role
-            }, status=status.HTTP_200_OK)
-            
-        except Workspace.DoesNotExist:
-            logger.error(f"❌ [REVERTIR-ADMIN] Workspace no encontrado: {workspace_id}")
-            return Response(
-                {'error': 'Workspace no encontrado'},
-                status=status.HTTP_404_NOT_FOUND
+            result = service_revert_admin_to_member(
+                requester=request.user,
+                workspace_id=workspace_id,
+                target_user_id=user_id
             )
-        except User.DoesNotExist:
-            logger.error(f"❌ [REVERTIR-ADMIN] Usuario no encontrado: {user_id}")
-            return Response(
-                {'error': 'Usuario no encontrado'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+
+            # ============================================================
+            # FASE 4: CONSTRUCCIÓN DE RESPUESTA EXITOSA
+            # ============================================================
+            logger.info(f"✅ [REVERTIR-ADMIN] Servicio ejecutado correctamente. Acción realizada: {result.get('action_performed')}")
+            
+            # Usamos el serializer para garantizar la estructura de la respuesta
+            serializer = RevertAdminResponseSerializer(result)
+            
+            logger.info("=" * 60)
+            if result.get('action_performed'):
+                logger.info(f"🎉 [REVERTIR-ADMIN] ¡REVERSIÓN EXITOSA!")
+                logger.info(f"📋 [REVERTIR-ADMIN] Usuario: {result.get('user_email')} → MEMBER")
+                logger.info(f"📋 [REVERTIR-ADMIN] Workspace: {result.get('workspace_name')}")
+            else:
+                logger.info(f"ℹ️ [REVERTIR-ADMIN] Operación idempotente (sin cambios necesarios)")
+            logger.info("=" * 60)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # ============================================================
+        # FASE 5: MANEJO ESPECÍFICO DE ERRORES (TRAZABILIDAD DE FALLOS)
+        # ============================================================
+        
+        except ValueError as e:
+            # Errores de entidad no encontrada o validación de negocio simple
+            error_msg = str(e)
+            logger.error(f"❌ [REVERTIR-ADMIN] Error de validación/entidad: {error_msg}")
+            
+            # Determinamos el código HTTP según el contexto del error
+            if "no encontrado" in error_msg.lower():
+                return Response({'error': error_msg}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': error_msg}, status=status.HTTP_400_BAD_REQUEST)
+
+        except PermissionError as e:
+            # Errores de permisos (No es miembro, no es OWNER)
+            error_msg = str(e)
+            logger.warning(f"⚠️ [REVERTIR-ADMIN] Denegado por permisos: {error_msg}")
+            return Response({'error': error_msg}, status=status.HTTP_403_FORBIDDEN)
+
         except Exception as e:
-            logger.error(f"💥 [REVERTIR-ADMIN] Error inesperado: {str(e)}")
+            # Errores inesperados (Crash del sistema, DB down, etc.)
+            logger.error(f"💥 [REVERTIR-ADMIN] Error inesperado/crítico: {str(e)}", exc_info=True)
             return Response(
-                {'error': str(e)},
+                {'error': 'Error interno del servidor al procesar la solicitud'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -861,12 +826,12 @@ class WorkspaceInviteView(APIView):
         logger.info("=" * 60)
 
         try:
-            # 🔥 PASAR EL USUARIO AL CONTEXTO DEL SERIALIZER
+            
             serializer = InviteMemberSerializer(
                 data=request.data,
                 context={
                     'workspace_id': workspace_id,
-                    'user': request.user  # ✅ AGREGAR
+                    'user': request.user  
                 }
             )
             serializer.is_valid(raise_exception=True)
@@ -1232,8 +1197,6 @@ class ChannelDetailView(APIView):
 # ============================================================
 # MESSAGE ENDPOINTS
 # ============================================================
-
-# apps/chat/endpoints.py - MessageListCreateView
 
 class MessageListCreateView(APIView):
     """Listar y enviar mensajes en un canal"""
