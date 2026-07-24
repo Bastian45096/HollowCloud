@@ -12,21 +12,21 @@ let inviteWorkspaceData = null;
 // ============================================================
 
 window.invitarMiembros = function() {
-    console.log('🔵 invitarMiembros EJECUTADO');
+ console.log('🔵 invitarMiembros EJECUTADO');
     
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
-    console.log('🔵 Workspace a invitar:', workspace);
+ console.log('🔵 Workspace a invitar:', workspace);
     
     const currentUser = getCurrentUser();
     const currentUserId = currentUser?.id;
@@ -41,13 +41,13 @@ window.invitarMiembros = function() {
         fetchWorkspaceMembers(workspaceId).then(membersData => {
             const userMember = membersData.members?.find(m => m.user?.id === currentUserId);
             if (!userMember || (userMember.role !== 'owner' && userMember.role !== 'admin')) {
-                showToast('Solo el owner o admin pueden invitar miembros', 'error');
+ showToast('Solo el owner o admin pueden invitar miembros', 'error');
                 return;
             }
             // Si es admin, abrir modal
             openInviteModal(workspace);
         }).catch(() => {
-            showToast('Error al verificar permisos', 'error');
+ showToast('Error al verificar permisos', 'error');
         });
         return;
     }
@@ -61,19 +61,19 @@ window.invitarMiembros = function() {
 // ============================================================
 
 function openInviteModal(workspace) {
-    console.log('🔵 openInviteModal EJECUTADO');
-    console.log('🔵 Workspace recibido:', workspace);
+ console.log('🔵 openInviteModal EJECUTADO');
+ console.log('🔵 Workspace recibido:', workspace);
     
     inviteWorkspaceData = workspace;
     
-    // 🔥 VERIFICAR SI EL USUARIO ES OWNER
+    // VERIFICAR SI EL USUARIO ES OWNER
     const currentUser = getCurrentUser();
     const currentUserId = currentUser?.id;
     const ownerId = workspace?.owner?.id || workspace?.owner_id;
     const isOwner = currentUserId === ownerId;
     const workspaceId = getActiveWorkspaceId();
     
-    // 🔥 OBTENER EL ROL DEL USUARIO EN EL WORKSPACE
+    // OBTENER EL ROL DEL USUARIO EN EL WORKSPACE
     let userRole = 'member';
     
     // Intentar obtener el rol del usuario actual desde los miembros
@@ -83,15 +83,15 @@ function openInviteModal(workspace) {
             userRole = userMember.role || 'member';
         }
         
-        // 🔥 DETERMINAR SI PUEDE INVITAR Y CON QUÉ ROLES
+        // DETERMINAR SI PUEDE INVITAR Y CON QUÉ ROLES
         const canInvite = isOwner || userRole === 'owner' || userRole === 'admin';
         
         if (!canInvite) {
-            showToast('No tienes permisos para invitar miembros', 'error');
+ showToast('No tienes permisos para invitar miembros', 'error');
             return;
         }
         
-        // 🔥 CONSTRUIR OPCIONES DE ROL SEGÚN PERMISOS
+        // CONSTRUIR OPCIONES DE ROL SEGÚN PERMISOS
         let roleOptions = '';
         if (isOwner || userRole === 'owner') {
             // OWNER puede invitar como ADMIN o MEMBER
@@ -299,7 +299,7 @@ function openInviteModal(workspace) {
         });
         
     }).catch(() => {
-        showToast('Error al verificar permisos', 'error');
+ showToast('Error al verificar permisos', 'error');
     });
 }
 
@@ -321,8 +321,8 @@ window.closeInviteModal = function() {
 // ============================================================
 
 window.confirmarInvitacion = async function() {
-    console.log('🔵 confirmarInvitacion EJECUTADO');
-    console.log('🔵 inviteWorkspaceData ACTUAL:', inviteWorkspaceData);
+ console.log('🔵 confirmarInvitacion EJECUTADO');
+ console.log('🔵 inviteWorkspaceData ACTUAL:', inviteWorkspaceData);
     
     const emailInput = document.getElementById('inviteEmailInput');
     const roleSelect = document.getElementById('inviteRoleSelect');
@@ -330,21 +330,21 @@ window.confirmarInvitacion = async function() {
     const email = emailInput ? emailInput.value.trim() : '';
     const role = roleSelect ? roleSelect.value : 'member';
     
-    console.log('🔵 Email:', email, 'Rol:', role);
+ console.log('🔵 Email:', email, 'Rol:', role);
     
     if (!email) {
-        showToast('Por favor ingresa un email', 'warning');
+ showToast('Por favor ingresa un email', 'warning');
         return;
     }
     
     if (!inviteWorkspaceData) {
-        console.error('❌ inviteWorkspaceData es null');
-        showToast('Error: workspace no encontrado. Por favor, abre el modal nuevamente.', 'error');
+ console.error('inviteWorkspaceData es null');
+ showToast('Error: workspace no encontrado. Por favor, abre el modal nuevamente.', 'error');
         setTimeout(() => window.location.reload(), 2000);
         return;
     }
     
-    console.log('🔵 Workspace:', inviteWorkspaceData);
+ console.log('🔵 Workspace:', inviteWorkspaceData);
     
     // Guardar datos ANTES de cerrar el modal
     const workspaceData = { ...inviteWorkspaceData };
@@ -352,14 +352,14 @@ window.confirmarInvitacion = async function() {
     // Cerrar modal
     window.closeInviteModal();
     
-    showToast('Enviando invitacion...', 'info');
+ showToast('Enviando invitacion...', 'info');
     
     try {
         const token = localStorage.getItem('access_token');
         const workspaceId = workspaceData.id;
         const url = `/api/chat/workspaces/${workspaceId}/invite/`;
         
-        console.log('🔵 URL:', url);
+ console.log('🔵 URL:', url);
         
         const response = await fetch(url, {
             method: 'POST',
@@ -371,40 +371,40 @@ window.confirmarInvitacion = async function() {
             body: JSON.stringify({ email, role })
         });
         
-        console.log('🔵 Response status:', response.status);
+ console.log('🔵 Response status:', response.status);
         
         const data = await response.json();
-        console.log('🔵 Respuesta COMPLETA:', data);
+ console.log('🔵 Respuesta COMPLETA:', data);
         
         if (!response.ok) {
             const errorMsg = data.error || data.message || 'Error al invitar usuario';
-            console.error('❌ Error del servidor:', errorMsg);
-            showToast('❌ ' + errorMsg, 'error');
+ console.error('Error del servidor:', errorMsg);
+ showToast('' + errorMsg, 'error');
             return;
         }
         
-        // ✅ OBTENER userId DE FORMA SEGURA
+        // OBTENER userId DE FORMA SEGURA
         const userId = data.member?.user_id || data.member?.user?.id || 'desconocido';
         const userEmail = data.member?.email || email;
         
-        console.log('✅ Usuario invitado ID:', userId);
-        console.log('✅ Usuario invitado Email:', userEmail);
+ console.log('Usuario invitado ID:', userId);
+ console.log('Usuario invitado Email:', userEmail);
         
-        // ✅ MENSAJE DE ÉXITO
+        // MENSAJE DE ÉXITO
         const roleDisplay = role === 'admin' ? 'Administrador' : 'Miembro';
         const currentUser = getCurrentUser();
         const inviterName = currentUser?.username || currentUser?.email || 'Usuario';
         const workspaceName = workspaceData?.name || 'Workspace';
         
-        showToast(`✅ ${inviterName} invitó a ${userEmail} como ${roleDisplay} en "${workspaceName}"`, 'success');
+ showToast(`${inviterName} invitó a ${userEmail} como ${roleDisplay} en "${workspaceName}"`, 'success');
         
-        // ✅ RECARGAR MIEMBROS
+        // RECARGAR MIEMBROS
         try {
             const workspaceId2 = getActiveWorkspaceId();
             if (workspaceId2) {
-                console.log('🔄 Recargando miembros...');
+ console.log('🔄 Recargando miembros...');
                 const membersData = await fetchWorkspaceMembers(workspaceId2);
-                console.log('📋 Miembros recargados:', membersData);
+ console.log('Miembros recargados:', membersData);
                 
                 const workspace = getActiveWorkspace();
                 if (typeof window.renderWorkspaceMembers === 'function') {
@@ -412,12 +412,12 @@ window.confirmarInvitacion = async function() {
                 }
             }
         } catch (e) {
-            console.warn('⚠️ Error al recargar miembros:', e);
+ console.warn('Error al recargar miembros:', e);
         }
         
     } catch (error) {
-        console.error('❌ Error al invitar:', error);
-        showToast('❌ Error: ' + error.message, 'error');
+ console.error('Error al invitar:', error);
+ showToast('Error: ' + error.message, 'error');
     }
 };
 
@@ -465,9 +465,9 @@ window.updateInviteButtonVisibility = function(workspaceId) {
 // ============================================================
 
 window.acceptInvitation = async function(membershipId, notificationId) {
-    console.log('✅ acceptInvitation - membershipId:', membershipId);
+ console.log('acceptInvitation - membershipId:', membershipId);
     
-    // 🔥 AGREGAR ESTILO DE SPIN SI NO EXISTE
+    // AGREGAR ESTILO DE SPIN SI NO EXISTE
     if (!document.getElementById('spinStyle')) {
         const style = document.createElement('style');
         style.id = 'spinStyle';
@@ -475,7 +475,7 @@ window.acceptInvitation = async function(membershipId, notificationId) {
         document.head.appendChild(style);
     }
     
-    // 🔥 MOSTRAR MODAL DE CARGA
+    // MOSTRAR MODAL DE CARGA
     const modalHtml = `
         <div id="loadingModal" style="
             position: fixed;
@@ -539,31 +539,31 @@ window.acceptInvitation = async function(membershipId, notificationId) {
         });
         
         const data = await response.json();
-        console.log('📦 Respuesta de aceptar:', data);
+ console.log('📦 Respuesta de aceptar:', data);
         
         if (!response.ok) {
             throw new Error(data.error || 'Error al aceptar invitación');
         }
         
-        // 🔥 RECARGAR PÁGINA
+        // RECARGAR PÁGINA
         window.location.reload();
         
     } catch (error) {
-        console.error('❌ Error al aceptar invitación:', error);
+ console.error('Error al aceptar invitación:', error);
         const modal = document.getElementById('loadingModal');
         if (modal) modal.remove();
-        showToast(`❌ ${error.message}`, 'error');
+ showToast(`${error.message}`, 'error');
     }
 };
 
 window.rejectInvitation = async function(membershipId, notificationId) {
-    console.log('❌ rejectInvitation - membershipId:', membershipId);
+ console.log('rejectInvitation - membershipId:', membershipId);
     
     if (!confirm('¿Estás seguro de que quieres rechazar esta invitación?')) {
         return;
     }
     
-    // 🔥 AGREGAR ESTILO DE SPIN SI NO EXISTE
+    // AGREGAR ESTILO DE SPIN SI NO EXISTE
     if (!document.getElementById('spinStyle')) {
         const style = document.createElement('style');
         style.id = 'spinStyle';
@@ -571,7 +571,7 @@ window.rejectInvitation = async function(membershipId, notificationId) {
         document.head.appendChild(style);
     }
     
-    // 🔥 MOSTRAR MODAL DE CARGA
+    // MOSTRAR MODAL DE CARGA
     const modalHtml = `
         <div id="loadingModal" style="
             position: fixed;
@@ -635,21 +635,21 @@ window.rejectInvitation = async function(membershipId, notificationId) {
         });
         
         const data = await response.json();
-        console.log('📦 Respuesta de rechazar:', data);
+ console.log('📦 Respuesta de rechazar:', data);
         
         if (!response.ok) {
             throw new Error(data.error || 'Error al rechazar invitación');
         }
         
-        // 🔥 RECARGAR PÁGINA
+        // RECARGAR PÁGINA
         window.location.reload();
         
     } catch (error) {
-        console.error('❌ Error al rechazar invitación:', error);
+ console.error('Error al rechazar invitación:', error);
         const modal = document.getElementById('loadingModal');
         if (modal) modal.remove();
-        showToast(`❌ ${error.message}`, 'error');
+ showToast(`${error.message}`, 'error');
     }
 };
 
-console.log('✅ Invite cargado');
+console.log('Invite cargado');

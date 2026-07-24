@@ -71,12 +71,12 @@ function getCurrentUser() {
                     avatar: payload.avatar || null
                 };
                 currentUser = user;
-                console.log('👤 Usuario obtenido del token:', user);
+ console.log('Usuario obtenido del token:', user);
                 return user;
             }
         }
     } catch (e) {
-        console.warn('⚠️ No se pudo decodificar token:', e);
+ console.warn('No se pudo decodificar token:', e);
     }
     
     
@@ -90,7 +90,7 @@ function getCurrentUser() {
 
 function setCurrentUser(user) {
     currentUser = user;
-    console.log('👤 Usuario guardado:', currentUser);
+ console.log('Usuario guardado:', currentUser);
 }
 
 // ============================================================
@@ -161,4 +161,4 @@ window.setKickingMemberId = setKickingMemberId;
 window.getKickingMemberName = getKickingMemberName;
 window.setKickingMemberName = setKickingMemberName;
 
-console.log('✅ Utils cargado');
+console.log('Utils cargado');

@@ -36,7 +36,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     # Campo calculado: tiempo transcurrido desde la creación
     time_ago = serializers.SerializerMethodField()
     
-    # 🔥 NUEVO CAMPO: datos parseados del mensaje (para invitaciones)
+    # NUEVO CAMPO: datos parseados del mensaje (para invitaciones)
     parsed_data = serializers.SerializerMethodField()
     
     class Meta:
@@ -116,7 +116,7 @@ class NotificationSerializer(serializers.ModelSerializer):
         try:
             data = json.loads(obj.message)
             if isinstance(data, dict):
-                # ✅ Aceptar TODOS los tipos de mensajes JSON (invitaciones, abandono, etc.)
+                # Aceptar TODOS los tipos de mensajes JSON (invitaciones, abandono, etc.)
                 return data
         except (json.JSONDecodeError, TypeError, ValueError):
             pass

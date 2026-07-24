@@ -5,12 +5,12 @@
 // ============================================================
 
 window.fetchAndSetUserRole = async function(workspaceId) {
-    console.log('📋 fetchAndSetUserRole llamado para:', workspaceId);
+ console.log('fetchAndSetUserRole llamado para:', workspaceId);
     try {
         const token = localStorage.getItem('access_token');
         
         if (!token) {
-            console.warn('⚠️ No hay token en localStorage');
+ console.warn('No hay token en localStorage');
             return null;
         }
         
@@ -25,14 +25,14 @@ window.fetchAndSetUserRole = async function(workspaceId) {
         
         if (response.ok) {
             const data = await response.json();
-            console.log('📋 Membresía obtenida:', data);
+ console.log('Membresía obtenida:', data);
             return data;
         } else {
-            console.warn('⚠️ No se pudo obtener membresía:', response.status);
+ console.warn('No se pudo obtener membresía:', response.status);
             return null;
         }
     } catch (e) {
-        console.warn('Error obteniendo membresía:', e);
+ console.warn('Error obteniendo membresía:', e);
         return null;
     }
 };
@@ -43,11 +43,11 @@ window.fetchAndSetUserRole = async function(workspaceId) {
 
 window.fetchWorkspaces = async function() {
     try {
-        console.log('🔍 fetchWorkspaces ejecutándose');
+ console.log('fetchWorkspaces ejecutándose');
         const token = localStorage.getItem('access_token');
         
         if (!token) {
-            console.warn('⚠️ No hay token en localStorage');
+ console.warn('No hay token en localStorage');
             return [];
         }
         
@@ -59,15 +59,15 @@ window.fetchWorkspaces = async function() {
             credentials: 'include'
         });
         
-        console.log('📡 Response status:', response.status);
+ console.log('Response status:', response.status);
         
         if (!response.ok) {
-            console.error('❌ Error:', response.status);
+ console.error('Error:', response.status);
             return [];
         }
         
         const data = await response.json();
-        console.log('📋 Datos parseados:', data);
+ console.log('Datos parseados:', data);
         
         let workspaces = [];
         if (Array.isArray(data)) {
@@ -85,11 +85,11 @@ window.fetchWorkspaces = async function() {
             }
         }
         
-        console.log('✅ Workspaces extraídos:', workspaces.length);
+ console.log('Workspaces extraídos:', workspaces.length);
         return workspaces;
         
     } catch (error) {
-        console.error('❌ Error en fetchWorkspaces:', error);
+ console.error('Error en fetchWorkspaces:', error);
         return [];
     }
 };
@@ -112,7 +112,7 @@ window.checkWorkspaceMembership = async function(workspaceId) {
         const token = localStorage.getItem('access_token');
         
         if (!token) {
-            console.warn('⚠️ No hay token en localStorage');
+ console.warn('No hay token en localStorage');
             return false;
         }
         
@@ -127,16 +127,16 @@ window.checkWorkspaceMembership = async function(workspaceId) {
         
         if (response.ok) {
             const data = await response.json();
-            console.log('📋 Verificación de membresía:', data);
+ console.log('Verificación de membresía:', data);
             return data.is_member === true;
         } else {
-            console.warn('⚠️ Error verificando membresía:', response.status);
+ console.warn('Error verificando membresía:', response.status);
             return false;
         }
     } catch (error) {
-        console.error('❌ Error en checkWorkspaceMembership:', error);
+ console.error('Error en checkWorkspaceMembership:', error);
         return false;
     }
 };
 
-console.log('✅ Workspace cargado');
+console.log('Workspace cargado');

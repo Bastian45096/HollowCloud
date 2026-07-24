@@ -245,7 +245,7 @@ class WorkspaceMembersView(APIView):
                         status=status.HTTP_403_FORBIDDEN
                     )
                 
-                # 🔥 GUARDAR DATOS DEL USUARIO QUE ABANDONA
+                # GUARDAR DATOS DEL USUARIO QUE ABANDONA
                 user_left = target_membership.user
                 workspace_name = workspace.name
                 workspace_id_str = str(workspace.id)
@@ -257,7 +257,7 @@ class WorkspaceMembersView(APIView):
                 invalidate_workspace_cache(workspace_id=workspace.id)
                 invalidate_user_workspaces_cache(user_id=request.user.id)
                 
-                # 🔥 ENVIAR NOTIFICACIÓN A OWNERS Y ADMINS
+                # ENVIAR NOTIFICACIÓN A OWNERS Y ADMINS
                 try:
                     from apps.notifications.services import notify_user_left_workspace_to_admins
                     notify_user_left_workspace_to_admins(
@@ -920,7 +920,7 @@ class AcceptInvitationView(APIView):
             member.status = WorkspaceMember.Status.ACTIVE
             member.save(update_fields=['status', 'updated_at'])
             
-            # 🔥 ELIMINAR LA NOTIFICACIÓN
+            # ELIMINAR LA NOTIFICACIÓN
             try:
                 from apps.notifications.models import Notification
                 import json
@@ -1001,7 +1001,7 @@ class RejectInvitationView(APIView):
             
             member.reject()
             
-            # 🔥 ELIMINAR LA NOTIFICACIÓN
+            # ELIMINAR LA NOTIFICACIÓN
             try:
                 from apps.notifications.models import Notification
                 import json

@@ -13,7 +13,7 @@ class ChatDashboardView(LoginRequiredMixin, View):
         return render(request, self.template_name)
 
 
-# ✅ ELIMINAR WorkspaceCreateView (ya no se usa)
+# ELIMINAR WorkspaceCreateView (ya no se usa)
 # class WorkspaceCreateView(LoginRequiredMixin, View):
 #     template_name = 'chat/workspace_form.html'
 #     def get(self, request):
@@ -28,7 +28,7 @@ class WorkspaceView(LoginRequiredMixin, View):
         return render(request, self.template_name, {'workspace_id': workspace_id})
 
 
-# ✅ ELIMINAR ChannelCreateView (ya no se usa)
+# ELIMINAR ChannelCreateView (ya no se usa)
 # class ChannelCreateView(LoginRequiredMixin, View):
 #     template_name = 'chat/channel_form.html'
 #     def get(self, request, workspace_id):

@@ -118,7 +118,7 @@ class RegisterView(APIView):
             logger.info(f"PROCESO [RegisterView] - Fase: {fase_actual}")
             logger.info("PROCESO [RegisterView] - Enviando notificación de bienvenida al usuario")
             
-            # ✅ Enviar notificación de bienvenida
+            # Enviar notificación de bienvenida
             # Esto NO bloquea la respuesta, el usuario no espera
             notification = notify_welcome_user(user)
             

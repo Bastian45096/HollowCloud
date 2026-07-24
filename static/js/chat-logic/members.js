@@ -28,7 +28,7 @@ async function promoteToAdmin(workspaceId, userId) {
         
         return data;
     } catch (error) {
-        console.error('Error al ascender:', error);
+ console.error('Error al ascender:', error);
         throw error;
     }
 }
@@ -41,7 +41,7 @@ window.promoteToAdmin = async function(workspaceId, userId) {
 
     try {
         const result = await promoteToAdmin(workspaceId, userId);
-        alert(result.message || 'Usuario ascendido a ADMIN exitosamente');
+ alert(result.message || 'Usuario ascendido a ADMIN exitosamente');
         
         // Recargar la lista de miembros
         if (typeof loadMembers === 'function') {
@@ -52,7 +52,7 @@ window.promoteToAdmin = async function(workspaceId, userId) {
         
         return result;
     } catch (error) {
-        alert(error.message || 'Error al ascender a admin');
+ alert(error.message || 'Error al ascender a admin');
     }
 };
 
@@ -84,7 +84,7 @@ async function revertToMember(workspaceId, userId) {
         
         return data;
     } catch (error) {
-        console.error('Error al revertir:', error);
+ console.error('Error al revertir:', error);
         throw error;
     }
 }
@@ -97,7 +97,7 @@ window.revertToMember = async function(workspaceId, userId, username) {
 
     try {
         const result = await revertToMember(workspaceId, userId);
-        alert(result.message || 'Usuario revertido a MEMBER exitosamente');
+ alert(result.message || 'Usuario revertido a MEMBER exitosamente');
         
         // Recargar la lista de miembros
         if (typeof loadWorkspaceMembers === 'function') {
@@ -108,9 +108,9 @@ window.revertToMember = async function(workspaceId, userId, username) {
         
         return result;
     } catch (error) {
-        alert(error.message || 'Error al revertir a miembro');
+ alert(error.message || 'Error al revertir a miembro');
     }
 };
 
 
-console.log('✅ Members cargado');
+console.log('Members cargado');

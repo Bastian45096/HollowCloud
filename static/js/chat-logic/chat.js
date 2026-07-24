@@ -16,7 +16,7 @@ window.selectWorkspace = async function(workspaceId) {
     try {
         await fetchAndSetUserRole(workspaceId);
     } catch (error) {
-        console.warn('No se pudo obtener el rol:', error);
+ console.warn('No se pudo obtener el rol:', error);
     }
     
     const workspace = getActiveWorkspace();
@@ -37,7 +37,7 @@ window.selectWorkspace = async function(workspaceId) {
             renderChannelsFallback(channels);
         }
     } catch (error) {
-        console.warn('No se pudieron cargar canales:', error);
+ console.warn('No se pudieron cargar canales:', error);
         document.getElementById('channelItems').innerHTML = 
             '<div style="padding: 8px 12px; color: var(--text-muted); font-size: 0.8rem; font-family: \'Ubuntu Mono\', \'Courier New\', monospace;">Error al cargar canales</div>';
         channels = [];
@@ -51,7 +51,7 @@ window.selectWorkspace = async function(workspaceId) {
             renderWorkspaceMembersFallback(members, workspace);
         }
     } catch (error) {
-        console.warn('No se pudieron cargar miembros:', error);
+ console.warn('No se pudieron cargar miembros:', error);
     }
 
     const area = document.getElementById('messagesArea');
@@ -88,7 +88,7 @@ window.selectWorkspace = async function(workspaceId) {
     // Si NO hay workspace seleccionado, OCULTAR TODOS LOS BOTONES
     if (!workspaceId) {
         if (leaveBtn) leaveBtn.style.display = 'none';
-        if (editWorkspaceBtn) editWorkspaceBtn.style.display = 'none'; // ✅ CORREGIDO
+        if (editWorkspaceBtn) editWorkspaceBtn.style.display = 'none';
         if (editChannelsBtn) editChannelsBtn.style.display = 'none';
         if (deleteChannelsBtn) deleteChannelsBtn.style.display = 'none';
         if (deleteBtn) deleteBtn.style.display = 'none';
@@ -109,19 +109,19 @@ window.selectWorkspace = async function(workspaceId) {
             userRole = userMember.role || 'member';
         }
     } catch (e) {
-        console.warn('No se pudo obtener el rol del usuario:', e);
+ console.warn('No se pudo obtener el rol del usuario:', e);
     }
     
     const isOwner = currentUserId === ownerId;
     const isAdmin = userRole === 'admin'
     const hasChannels = channels && channels.length > 0;
     
-    console.log('Usuario actual ID:', currentUserId);
-    console.log('Owner ID:', ownerId);
-    console.log('Es owner?', isOwner);
-    console.log('Es admin?', isAdmin);
-    console.log('Rol:', userRole);
-    console.log('Tiene canales?', hasChannels, 'Cantidad:', channels?.length || 0);
+ console.log('Usuario actual ID:', currentUserId);
+ console.log('Owner ID:', ownerId);
+ console.log('Es owner?', isOwner);
+ console.log('Es admin?', isAdmin);
+ console.log('Rol:', userRole);
+ console.log('Tiene canales?', hasChannels, 'Cantidad:', channels?.length || 0);
     
     if (workspaceId && isOwner) {
         // Owner: mostrar Editar Workspace, Eliminar Workspace
@@ -236,18 +236,18 @@ window.selectWorkspace = async function(workspaceId) {
 // ============================================================
 
 window.searchWorkspaces = async function() {
-    console.log('🔍 searchWorkspaces ejecutándose');
+ console.log('searchWorkspaces ejecutándose');
     
     const input = document.getElementById('searchWorkspaceInput');
     const resultsDiv = document.getElementById('searchResults');
     
     if (!input || !resultsDiv) {
-        console.error('❌ Elementos de búsqueda no encontrados');
+ console.error('Elementos de búsqueda no encontrados');
         return;
     }
 
     const query = input.value.trim();
-    console.log('🔍 Buscando:', query);
+ console.log('Buscando:', query);
 
     if (!query || query.length < 2) {
         resultsDiv.innerHTML = `<span class="empty-state" style="font-family: 'Ubuntu Mono', 'Courier New', monospace; color: var(--text-muted);">
@@ -257,12 +257,12 @@ window.searchWorkspaces = async function() {
     }
 
     resultsDiv.innerHTML = `<span style="color: var(--text-muted); font-family: 'Ubuntu Mono', 'Courier New', monospace;">
-        🔍 Buscando...
+        Buscando...
     </span>`;
 
     try {
         const data = await searchWorkspacesApi(query);
-        console.log('📋 Resultados:', data);
+ console.log('Resultados:', data);
 
         if (data.workspaces && data.workspaces.length > 0) {
             let html = `<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
@@ -290,7 +290,7 @@ window.searchWorkspaces = async function() {
             </span>`;
         }
     } catch (error) {
-        console.error('❌ Error al buscar:', error);
+ console.error('Error al buscar:', error);
         resultsDiv.innerHTML = `<span class="error-state" style="font-family: 'Ubuntu Mono', 'Courier New', monospace; color: #ff4444;">
             Error: ${error.message}
         </span>`;
@@ -298,58 +298,58 @@ window.searchWorkspaces = async function() {
 };
 
 window.joinSearchedWorkspace = async function(workspaceId) {
-    console.log('🔗 Uniéndose al workspace:', workspaceId);
+ console.log('🔗 Uniéndose al workspace:', workspaceId);
     
     try {
         const data = await joinWorkspaceApi(workspaceId);
-        console.log('📋 Respuesta de unión:', data);
+ console.log('Respuesta de unión:', data);
         
         if (data.success || data.id || data.already_member) {
             closeSearchModal();
             
-            // ✅ FORZAR RECARGA DE WORKSPACES (SIN FILTRAR)
+            // FORZAR RECARGA DE WORKSPACES (SIN FILTRAR)
             const freshWorkspaces = await window.fetchWorkspaces();
-            console.log('📋 Workspaces frescos:', freshWorkspaces);
+ console.log('Workspaces frescos:', freshWorkspaces);
             
             if (Array.isArray(freshWorkspaces)) {
-                // ✅ Guardar directamente sin filtrar
+                // Guardar directamente sin filtrar
                 setWorkspaces(freshWorkspaces);
                 
-                // ✅ Renderizar workspaces
+                // Renderizar workspaces
                 if (typeof window.renderWorkspaces === 'function') {
                     window.renderWorkspaces();
                 } else {
                     renderWorkspacesFallback(freshWorkspaces);
                 }
                 
-                // ✅ Buscar el workspace al que nos unimos
+                // Buscar el workspace al que nos unimos
                 const joinedWorkspace = freshWorkspaces.find(w => w.id === workspaceId);
                 
                 if (joinedWorkspace) {
-                    console.log('✅ Workspace encontrado, seleccionando:', joinedWorkspace.name);
+ console.log('Workspace encontrado, seleccionando:', joinedWorkspace.name);
                     await window.selectWorkspace(workspaceId);
                 } else {
-                    console.warn('⚠️ No se encontró el workspace en la lista, recargando página...');
+ console.warn('No se encontró el workspace en la lista, recargando página...');
                     window.location.reload();
                 }
             }
             
             if (data.already_member) {
-                showToast('ℹ️ Ya eres miembro de este workspace', 'info');
+ showToast('ℹ️ Ya eres miembro de este workspace', 'info');
             } else {
                 const workspaceName = data.workspace?.name || 'Workspace';
-                showToast(`✅ Te has unido a "${workspaceName}"`, 'success');
+ showToast(`Te has unido a "${workspaceName}"`, 'success');
             }
             return;
         }
         
         const errorMsg = data.message || data.error || 'Error al unirse';
-        showToast('❌ ' + errorMsg, 'error');
-        console.error('Error al unirse:', data);
+ showToast('' + errorMsg, 'error');
+ console.error('Error al unirse:', data);
         
     } catch (error) {
-        console.error('❌ Error al unirse:', error);
-        showToast('❌ Error de conexión: ' + error.message, 'error');
+ console.error('Error al unirse:', error);
+ showToast('Error de conexión: ' + error.message, 'error');
     }
 };
 
@@ -359,14 +359,14 @@ window.joinSearchedWorkspace = async function(workspaceId) {
 
 window.reloadWorkspaces = async function() {
     try {
-        console.log('🔄 Recargando workspaces...');
+ console.log('🔄 Recargando workspaces...');
         
         const currentWorkspaceId = getActiveWorkspaceId();
         const workspaces = await window.fetchWorkspaces();
-        console.log('📋 Workspaces obtenidos en reload:', workspaces);
+ console.log('Workspaces obtenidos en reload:', workspaces);
         
         if (!Array.isArray(workspaces)) {
-            console.warn('⚠️ workspaces no es un array en reload');
+ console.warn('workspaces no es un array en reload');
             return [];
         }
         
@@ -382,7 +382,7 @@ window.reloadWorkspaces = async function() {
             renderWorkspacesFallback(validWorkspaces);
         }
         
-        // ✅ Si NO hay workspaces válidos, ocultar todos los botones
+        // Si NO hay workspaces válidos, ocultar todos los botones
         if (validWorkspaces.length === 0) {
             const leaveBtn = document.getElementById('leaveWorkspaceBtn');
             const editWorkspaceBtn = document.getElementById('editWorkspaceBtn');
@@ -416,12 +416,12 @@ window.reloadWorkspaces = async function() {
                 `;
             }
             
-            // ✅ Limpiar también los canales y miembros
+            // Limpiar también los canales y miembros
             document.getElementById('channelItems').innerHTML = 
                 '<div style="padding: 8px 12px; color: var(--text-muted); font-size: 0.8rem; font-family: \'Ubuntu Mono\', \'Courier New\', monospace;">Selecciona un workspace</div>';
             document.getElementById('workspaceMembers').innerHTML = '';
             
-            // ✅ Limpiar área de mensajes
+            // Limpiar área de mensajes
             const area = document.getElementById('messagesArea');
             if (area) {
                 area.innerHTML = `
@@ -446,7 +446,7 @@ window.reloadWorkspaces = async function() {
             return validWorkspaces;
         }
         
-        // ✅ Si hay workspaces pero ninguno seleccionado, asegurar que los botones estén ocultos
+        // Si hay workspaces pero ninguno seleccionado, asegurar que los botones estén ocultos
         if (validWorkspaces.length > 0 && !getActiveWorkspaceId()) {
             const leaveBtn = document.getElementById('leaveWorkspaceBtn');
             const editWorkspaceBtn = document.getElementById('editWorkspaceBtn');
@@ -465,7 +465,7 @@ window.reloadWorkspaces = async function() {
         }
         
         if (currentWorkspaceId && validWorkspaces.find(w => w.id === currentWorkspaceId)) {
-            console.log('✅ Workspace activo mantenido:', currentWorkspaceId);
+ console.log('Workspace activo mantenido:', currentWorkspaceId);
             return validWorkspaces;
         }
         
@@ -473,10 +473,10 @@ window.reloadWorkspaces = async function() {
             await window.selectWorkspace(validWorkspaces[0].id);
         }
         
-        console.log('✅ Workspaces recargados:', validWorkspaces.length);
+ console.log('Workspaces recargados:', validWorkspaces.length);
         return validWorkspaces;
     } catch (error) {
-        console.error('Error recargando workspaces:', error);
+ console.error('Error recargando workspaces:', error);
         return [];
     }
 };
@@ -491,7 +491,7 @@ window.confirmEditMessage = async function() {
 
     const newContent = textarea.value.trim();
     if (!newContent) {
-        alert('El mensaje no puede estar vacío');
+ alert('El mensaje no puede estar vacío');
         return;
     }
 
@@ -523,7 +523,7 @@ window.confirmEditMessage = async function() {
         const channel = channels.find(c => c.id === getActiveChannelId());
         updateHeader(workspace, channel);
     } catch (error) {
-        alert('❌ Error al editar: ' + error.message);
+ alert('Error al editar: ' + error.message);
     } finally {
         if (saveBtn) {
             saveBtn.disabled = false;
@@ -562,11 +562,11 @@ window.confirmDeleteMessage = async function() {
             updateHeader(workspace, channel);
         } else {
             const data = await response.json();
-            alert('❌ Error al eliminar: ' + (data.message || data.error || 'Error desconocido'));
+ alert('Error al eliminar: ' + (data.message || data.error || 'Error desconocido'));
             closeDeleteModal();
         }
     } catch (error) {
-        alert('❌ Error de conexión: ' + error.message);
+ alert('Error de conexión: ' + error.message);
         closeDeleteModal();
     } finally {
         if (deleteBtn) {
@@ -598,13 +598,13 @@ window.confirmKickMember = async function() {
             window.location.reload();
         } else {
             const data = await response.json();
-            console.error('Error al expulsar:', data);
-            alert('❌ Error al expulsar a ' + username);
+ console.error('Error al expulsar:', data);
+ alert('Error al expulsar a ' + username);
         }
     } catch (error) {
         closeKickProcessingModal();
-        console.error('Error de conexión:', error);
-        alert('❌ Error de conexión al expulsar a ' + username);
+ console.error('Error de conexión:', error);
+ alert('Error de conexión al expulsar a ' + username);
     }
 };
 
@@ -627,11 +627,11 @@ function setupMessageForm() {
         const hasFile = selectedFile !== null;
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
-            // ✅ Permitir enviar si hay texto O archivo
+            // Permitir enviar si hay texto O archivo
             submitBtn.disabled = !(hasText || hasFile);
         }
         
-        // ✅ CLIP SIEMPRE HABILITADO
+        // CLIP SIEMPRE HABILITADO
         if (fileUploadBtn) {
             fileUploadBtn.disabled = false;
         }
@@ -641,13 +641,13 @@ function setupMessageForm() {
         messageInput.addEventListener('input', validateForm);
     }
 
-    // ✅ Botón del clip - abre el selector de archivos
+    // Botón del clip - abre el selector de archivos
     if (fileUploadBtn) {
-        fileUploadBtn.disabled = false; // ✅ Asegurar que esté habilitado
+        fileUploadBtn.disabled = false;
         fileUploadBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('🖱️ Clip clickeado, abriendo selector...');
+ console.log('Clip clickeado, abriendo selector...');
             if (fileInput) {
                 fileInput.click();
             }
@@ -660,7 +660,7 @@ function setupMessageForm() {
                 const file = this.files[0];
                 
                 if (file.size > 10 * 1024 * 1024) {
-                    alert('El archivo es demasiado grande. Máximo 10MB.');
+ alert('El archivo es demasiado grande. Máximo 10MB.');
                     this.value = '';
                     selectedFile = null;
                     return;
@@ -690,14 +690,14 @@ function setupMessageForm() {
 
             const content = messageInput ? messageInput.value.trim() : '';
             
-            // ✅ Permitir enviar SOLO archivo (sin texto)
+            // Permitir enviar SOLO archivo (sin texto)
             if (!content && !selectedFile) {
-                console.warn('⚠️ No hay mensaje ni archivo para enviar');
+ console.warn('No hay mensaje ni archivo para enviar');
                 return;
             }
             
             if (!getActiveChannelId()) {
-                showToast('⚠️ Selecciona un canal primero', 'warning');
+ showToast('Selecciona un canal primero', 'warning');
                 return;
             }
 
@@ -708,7 +708,7 @@ function setupMessageForm() {
             }
 
             try {
-                // ✅ Si no hay contenido pero hay archivo, enviar un espacio
+                // Si no hay contenido pero hay archivo, enviar un espacio
                 // El backend procesará el archivo aunque el texto sea un espacio
                 const finalContent = content || ' ';
                 
@@ -728,7 +728,7 @@ function setupMessageForm() {
                 updateHeader(workspace, channel);
 
             } catch (error) {
-                alert('❌ Error al enviar mensaje: ' + error.message);
+ alert('Error al enviar mensaje: ' + error.message);
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
@@ -738,7 +738,7 @@ function setupMessageForm() {
         });
     }
 
-    // ✅ Inicializar con el clip habilitado
+    // Inicializar con el clip habilitado
     validateForm();
 }
 // ============================================================
@@ -792,15 +792,15 @@ function startMembershipCheck() {
             });
             
             if (!response.ok) {
-                console.warn('⚠️ Error verificando membresía');
+ console.warn('Error verificando membresía');
                 return;
             }
             
             const data = await response.json();
             
             if (!data.is_member) {
-                console.log(`⚠️ Has sido expulsado del workspace ${workspaceId}`);
-                showToast('❌ Has sido expulsado de este workspace', 'error');
+ console.log(`Has sido expulsado del workspace ${workspaceId}`);
+ showToast('Has sido expulsado de este workspace', 'error');
                 
                 await reloadWorkspaces();
                 
@@ -811,7 +811,7 @@ function startMembershipCheck() {
                 if (area) {
                     area.innerHTML = `
                         <div class="empty-messages">
-                            <h3>🚫 Has sido expulsado</h3>
+                            <h3>Has sido expulsado</h3>
                             <p>Ya no eres miembro de este workspace</p>
                         </div>
                     `;
@@ -821,7 +821,7 @@ function startMembershipCheck() {
                     '<div style="padding: 8px 12px; color: var(--text-muted); font-size: 0.8rem;">Selecciona un workspace</div>';
             }
         } catch (error) {
-            console.error('❌ Error verificando membresía:', error);
+ console.error('Error verificando membresía:', error);
         }
     }, 15000);
 }
@@ -856,7 +856,7 @@ async function cleanupInaccessibleWorkspaces() {
                     if (data.is_member) {
                         validWorkspaces.push(workspace);
                     } else {
-                        console.log(`⚠️ Workspace ${workspace.name} removido (ya no eres miembro)`);
+ console.log(`Workspace ${workspace.name} removido (ya no eres miembro)`);
                         document.querySelectorAll(`[data-workspace-id="${workspace.id}"]`).forEach(el => el.remove());
                     }
                 } else {
@@ -869,7 +869,7 @@ async function cleanupInaccessibleWorkspaces() {
         
         return validWorkspaces;
     } catch (error) {
-        console.error('❌ Error en cleanupInaccessibleWorkspaces:', error);
+ console.error('Error en cleanupInaccessibleWorkspaces:', error);
         return getWorkspaces() || [];
     }
 }
@@ -892,7 +892,7 @@ function showToast(message, type = 'success') {
         warning: '#ffaa00'
     };
     
-    // ✅ SIN ICONOS - solo el mensaje
+    // SIN ICONOS - solo el mensaje
     toast.innerHTML = `
         <span class="toast-message">${message}</span>
     `;
@@ -913,7 +913,7 @@ function showToast(message, type = 'success') {
         alignItems: 'center',
         gap: '10px',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
-        // ✅ FUENTE UBUNTU MONO
+        // FUENTE UBUNTU MONO
         fontFamily: "'Ubuntu Mono', 'Courier New', monospace",
         animation: 'toastSlideIn 0.3s ease'
     });
@@ -1137,7 +1137,7 @@ function renderMessagesFallback(messages) {
     const currentUser = getCurrentUser();
     const currentUserId = currentUser?.id;
     
-    // ✅ Obtener el rol del usuario actual
+    // Obtener el rol del usuario actual
     const workspaceId = getActiveWorkspaceId();
     let currentUserRole = 'member';
     
@@ -1158,10 +1158,10 @@ function renderMessagesFallback(messages) {
         const messageId = message.id || '';
         const escapedContent = content.replace(/'/g, "\\'");
         
-        // ✅ Rol del autor
+        // Rol del autor
         const authorRole = message.author?.role || 'member';
         
-        // ✅ Lógica de permisos para eliminar
+        // Lógica de permisos para eliminar
         let canDelete = false;
         if (isOwn) {
             canDelete = true;
@@ -1314,14 +1314,14 @@ function renderWorkspaceMembersFallback(membersData, workspace) {
 
 window.reloadWorkspaces = async function() {
     try {
-        console.log('🔄 Recargando workspaces...');
+ console.log('🔄 Recargando workspaces...');
         
         const currentWorkspaceId = getActiveWorkspaceId();
         const workspaces = await window.fetchWorkspaces();
-        console.log('📋 Workspaces obtenidos en reload:', workspaces);
+ console.log('Workspaces obtenidos en reload:', workspaces);
         
         if (!Array.isArray(workspaces)) {
-            console.warn('⚠️ workspaces no es un array en reload');
+ console.warn('workspaces no es un array en reload');
             return [];
         }
         
@@ -1384,15 +1384,15 @@ window.reloadWorkspaces = async function() {
         if (validWorkspaces.length > 0 && !getActiveWorkspaceId()) {
             await window.selectWorkspace(validWorkspaces[0].id);
         } else if (currentWorkspaceId && validWorkspaces.find(w => w.id === currentWorkspaceId)) {
-            console.log('✅ Workspace activo mantenido:', currentWorkspaceId);
+ console.log('Workspace activo mantenido:', currentWorkspaceId);
         } else if (validWorkspaces.length > 0 && currentWorkspaceId) {
             await window.selectWorkspace(validWorkspaces[0].id);
         }
         
-        console.log('✅ Workspaces recargados:', validWorkspaces.length);
+ console.log('Workspaces recargados:', validWorkspaces.length);
         return validWorkspaces;
     } catch (error) {
-        console.error('Error recargando workspaces:', error);
+ console.error('Error recargando workspaces:', error);
         return [];
     }
 };
@@ -1404,47 +1404,47 @@ window.reloadWorkspaces = async function() {
 async function init() {
     const token = getToken();
     if (!token) {
-        console.log('⚠️ No hay token, redirigiendo a login...');
+ console.log('No hay token, redirigiendo a login...');
         window.location.href = '/login/';
         return;
     }
 
-    console.log('✅ Token encontrado, iniciando chat...');
+ console.log('Token encontrado, iniciando chat...');
     
     // Intentar obtener usuario
     try {
         await fetchCurrentUser();
     } catch (e) {
-        console.warn('⚠️ No se pudo obtener usuario, continuando...');
+ console.warn('No se pudo obtener usuario, continuando...');
     }
 
-    // ✅ Obtener workspaces usando la NUEVA función
+    // Obtener workspaces usando la NUEVA función
     let workspaces = [];
     try {
         workspaces = await window.fetchWorkspaces();
-        console.log('📋 Workspaces obtenidos en init:', workspaces);
+ console.log('Workspaces obtenidos en init:', workspaces);
     } catch (error) {
-        console.error('❌ Error al obtener workspaces:', error);
+ console.error('Error al obtener workspaces:', error);
     }
     
-    // ✅ Verificar que workspaces sea un array
+    // Verificar que workspaces sea un array
     if (!Array.isArray(workspaces)) {
-        console.warn('⚠️ workspaces no es un array, usando array vacío');
+ console.warn('workspaces no es un array, usando array vacío');
         workspaces = [];
     }
     
-    console.log('📋 Workspaces finales:', workspaces.length);
+ console.log('Workspaces finales:', workspaces.length);
     
     // Guardar en el estado global
     if (typeof setWorkspaces === 'function') {
         setWorkspaces(workspaces);
     }
     
-    // ✅ Renderizar workspaces - con fallback
+    // Renderizar workspaces - con fallback
     if (typeof window.renderWorkspaces === 'function') {
         window.renderWorkspaces();
     } else {
-        console.warn('⚠️ renderWorkspaces no está definida, usando fallback');
+ console.warn('renderWorkspaces no está definida, usando fallback');
         renderWorkspacesFallback(workspaces);
     }
 
@@ -1475,29 +1475,29 @@ async function init() {
 window.leaveWorkspace = async function() {
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('⚠️ No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('⚠️ Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
-    // ✅ Confirmar con el usuario
+    // Confirmar con el usuario
     if (!confirm(`¿Estás seguro de que quieres abandonar el workspace "${workspace.name}"?\n\nPerderás acceso a todos los canales y mensajes.`)) {
         return;
     }
     
     try {
-        showToast('⏳ Abandonando workspace...', 'info');
+ showToast('⏳ Abandonando workspace...', 'info');
         
         const token = localStorage.getItem('access_token');
         const currentUser = getCurrentUser();
         
         if (!currentUser || !currentUser.id) {
-            showToast('❌ No se pudo identificar al usuario', 'error');
+ showToast('No se pudo identificar al usuario', 'error');
             return;
         }
         
@@ -1516,12 +1516,12 @@ window.leaveWorkspace = async function() {
             throw new Error(data.error || 'Error al abandonar workspace');
         }
         
-        showToast(`✅ Has abandonado el workspace "${workspace.name}"`, 'success');
+ showToast(`Has abandonado el workspace "${workspace.name}"`, 'success');
         
-        // ✅ Recargar workspaces
+        // Recargar workspaces
         await reloadWorkspaces();
         
-        // ✅ Limpiar vista
+        // Limpiar vista
         setActiveWorkspaceId(null);
         setActiveChannelId(null);
         
@@ -1539,13 +1539,13 @@ window.leaveWorkspace = async function() {
         document.getElementById('channelItems').innerHTML = 
             '<div style="padding: 8px 12px; color: var(--text-muted); font-size: 0.8rem;">Selecciona un workspace</div>';
         
-        // ✅ Ocultar el botón de abandonar
+        // Ocultar el botón de abandonar
         const leaveBtn = document.getElementById('leaveWorkspaceBtn');
         if (leaveBtn) {
             leaveBtn.style.display = 'none';
         }
         
-        // ✅ Actualizar header
+        // Actualizar header
         const headerTitle = document.getElementById('channelTitle');
         if (headerTitle) {
             headerTitle.textContent = 'Selecciona un canal';
@@ -1557,8 +1557,8 @@ window.leaveWorkspace = async function() {
         }
         
     } catch (error) {
-        console.error('❌ Error al abandonar workspace:', error);
-        showToast(`❌ Error: ${error.message}`, 'error');
+ console.error('Error al abandonar workspace:', error);
+ showToast(`Error: ${error.message}`, 'error');
     }
 };
 
@@ -1587,4 +1587,4 @@ window.checkWorkspaceMembership = checkWorkspaceMembership;
 window.startMembershipCheck = startMembershipCheck;
 window.reloadWorkspaces = reloadWorkspaces;
 
-console.log('✅ Chat inicializado correctamente');
+console.log('Chat inicializado correctamente');

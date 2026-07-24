@@ -12,9 +12,9 @@ function getAuthHeaders() {
     
     if (token) {
         headers['Authorization'] = 'Bearer ' + token;
-        console.log('✅ Token incluido en la petición');
+ console.log('Token incluido en la petición');
     } else {
-        console.warn('⚠️ No hay token en localStorage');
+ console.warn('No hay token en localStorage');
     }
     
     return headers;
@@ -38,7 +38,7 @@ async function apiFetch(url, options = {}) {
     
     // Si el token expiró, intentar refrescar
     if (response.status === 401) {
-        console.warn('⚠️ Token expirado o inválido');
+ console.warn('Token expirado o inválido');
         const refreshed = await refreshToken();
         if (refreshed) {
             const newHeaders = {
@@ -81,14 +81,14 @@ async function refreshToken() {
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('access_token', data.access);
-            console.log('✅ Token refrescado');
+ console.log('Token refrescado');
             return true;
         } else {
-            console.warn('❌ No se pudo refrescar el token');
+ console.warn('No se pudo refrescar el token');
             return false;
         }
     } catch (error) {
-        console.error('Error refrescando token:', error);
+ console.error('Error refrescando token:', error);
         return false;
     }
 }
@@ -105,7 +105,7 @@ async function handleForbidden(workspaceId) {
     isHandlingForbidden = true;
     
     try {
-        console.warn('🚫 Acceso denegado al workspace', workspaceId);
+ console.warn('Acceso denegado al workspace', workspaceId);
         
         // Verificar membresía
         const token = localStorage.getItem('access_token');
@@ -118,19 +118,19 @@ async function handleForbidden(workspaceId) {
         });
         
         if (!response.ok) {
-            console.warn('⚠️ No se pudo verificar membresía, asumiendo expulsado');
+ console.warn('No se pudo verificar membresía, asumiendo expulsado');
         }
         
         const data = await response.json();
         
         if (!data.is_member) {
-            console.log('⚠️ Has sido expulsado del workspace', workspaceId);
+ console.log('Has sido expulsado del workspace', workspaceId);
             
             // Mostrar notificación
             if (typeof window.showToast === 'function') {
-                window.showToast('❌ Has sido expulsado de este workspace', 'error');
+ window.showToast('Has sido expulsado de este workspace', 'error');
             } else {
-                console.log('❌ Has sido expulsado de este workspace');
+ console.log('Has sido expulsado de este workspace');
             }
             
             // Recargar workspaces y limpiar vista
@@ -170,7 +170,7 @@ async function handleForbidden(workspaceId) {
             }
         }
     } catch (error) {
-        console.error('❌ Error en handleForbidden:', error);
+ console.error('Error en handleForbidden:', error);
     } finally {
         isHandlingForbidden = false;
     }
@@ -182,43 +182,43 @@ async function handleForbidden(workspaceId) {
 
 async function fetchWorkspaces() {
     try {
-        console.log('🔍 fetchWorkspaces llamado');
+ console.log('fetchWorkspaces llamado');
         const response = await apiFetch('/api/chat/workspaces/');
-        console.log('📡 Response recibida:', response);
+ console.log('Response recibida:', response);
         
         if (!response || !response.ok) {
-            console.error('❌ Error al obtener workspaces:', response?.status || 'sin respuesta');
+ console.error('Error al obtener workspaces:', response?.status || 'sin respuesta');
             return [];
         }
         
         const data = await response.json();
-        console.log('📋 Datos parseados de workspaces:', data);
+ console.log('Datos parseados de workspaces:', data);
         
         if (Array.isArray(data)) {
-            console.log('✅ Es un array directo con', data.length, 'workspaces');
+ console.log('Es un array directo con', data.length, 'workspaces');
             return data;
         }
         
         if (data && typeof data === 'object' && Array.isArray(data.workspaces)) {
-            console.log('✅ Es un objeto con workspaces[] con', data.workspaces.length, 'workspaces');
+ console.log('Es un objeto con workspaces[] con', data.workspaces.length, 'workspaces');
             return data.workspaces;
         }
         
         if (data && typeof data === 'object' && Array.isArray(data.results)) {
-            console.log('✅ Es un objeto con results[] con', data.results.length, 'workspaces');
+ console.log('Es un objeto con results[] con', data.results.length, 'workspaces');
             return data.results;
         }
         
         if (data && typeof data === 'object' && Array.isArray(data.data)) {
-            console.log('✅ Es un objeto con data[] con', data.data.length, 'workspaces');
+ console.log('Es un objeto con data[] con', data.data.length, 'workspaces');
             return data.data;
         }
         
-        console.warn('⚠️ No se pudo extraer un array de la respuesta:', data);
+ console.warn('No se pudo extraer un array de la respuesta:', data);
         return [];
         
     } catch (error) {
-        console.error('❌ Error en fetchWorkspaces:', error);
+ console.error('Error en fetchWorkspaces:', error);
         return [];
     }
 }
@@ -231,18 +231,18 @@ async function fetchChannels(workspaceId) {
         
         //  Detectar 403 (expulsión) y actuar inmediatamente
         if (response.status === 403) {
-            console.warn('🚫 403 al obtener canales - posible expulsión');
+ console.warn('403 al obtener canales - posible expulsión');
             await handleForbidden(workspaceId);
             return [];
         }
         
         if (!response || !response.ok) {
-            console.error('Error al obtener canales:', response?.status || 'sin respuesta');
+ console.error('Error al obtener canales:', response?.status || 'sin respuesta');
             return [];
         }
         
         const data = await response.json();
-        console.log('📋 Datos de canales:', data);
+ console.log('Datos de canales:', data);
         
         if (Array.isArray(data)) {
             return data;
@@ -259,7 +259,7 @@ async function fetchChannels(workspaceId) {
         
         return [];
     } catch (error) {
-        console.error('Error en fetchChannels:', error);
+ console.error('Error en fetchChannels:', error);
         return [];
     }
 }
@@ -271,18 +271,18 @@ async function fetchMessages(channelId) {
         const response = await apiFetch(`/api/chat/workspaces/${getActiveWorkspaceId()}/channels/${channelId}/messages/`);
         
         if (response.status === 403) {
-            console.warn('🚫 403 al obtener mensajes - posible expulsión');
+ console.warn('403 al obtener mensajes - posible expulsión');
             await handleForbidden(getActiveWorkspaceId());
             return [];
         }
         
         if (!response || !response.ok) {
-            console.error('Error al obtener mensajes:', response?.status || 'sin respuesta');
+ console.error('Error al obtener mensajes:', response?.status || 'sin respuesta');
             return [];
         }
         
         const data = await response.json();
-        console.log('📋 Datos de mensajes:', data);
+ console.log('Datos de mensajes:', data);
         
         if (data && Array.isArray(data.messages)) {
             return data.messages;
@@ -293,7 +293,7 @@ async function fetchMessages(channelId) {
         
         return [];
     } catch (error) {
-        console.error('Error en fetchMessages:', error);
+ console.error('Error en fetchMessages:', error);
         return [];
     }
 }
@@ -305,18 +305,18 @@ async function fetchWorkspaceMembers(workspaceId) {
         const response = await apiFetch(`/api/chat/workspaces/${workspaceId}/members/?limit=100`);
         
         if (response.status === 403) {
-            console.warn('🚫 403 al obtener miembros - posible expulsión');
+ console.warn('403 al obtener miembros - posible expulsión');
             await handleForbidden(workspaceId);
             return { members: [] };
         }
         
         if (!response || !response.ok) {
-            console.error('Error al obtener miembros:', response?.status || 'sin respuesta');
+ console.error('Error al obtener miembros:', response?.status || 'sin respuesta');
             return { members: [] };
         }
         
         const data = await response.json();
-        console.log('📋 Datos de miembros:', data);
+ console.log('Datos de miembros:', data);
         
         if (data && Array.isArray(data.members)) {
             return data;
@@ -327,7 +327,7 @@ async function fetchWorkspaceMembers(workspaceId) {
         
         return { members: [] };
     } catch (error) {
-        console.error('Error en fetchWorkspaceMembers:', error);
+ console.error('Error en fetchWorkspaceMembers:', error);
         return { members: [] };
     }
 }
@@ -339,12 +339,12 @@ async function searchWorkspacesApi(query) {
         const response = await apiFetch(`/api/chat/workspaces/search/?q=${encodeURIComponent(query)}`);
         
         if (!response || !response.ok) {
-            console.error('Error al buscar workspaces:', response?.status || 'sin respuesta');
+ console.error('Error al buscar workspaces:', response?.status || 'sin respuesta');
             return { workspaces: [], total: 0 };
         }
         
         const data = await response.json();
-        console.log('📋 Datos de búsqueda:', data);
+ console.log('Datos de búsqueda:', data);
         
         if (data && Array.isArray(data.workspaces)) {
             return data;
@@ -355,7 +355,7 @@ async function searchWorkspacesApi(query) {
         
         return { workspaces: [], total: 0 };
     } catch (error) {
-        console.error('Error en searchWorkspacesApi:', error);
+ console.error('Error en searchWorkspacesApi:', error);
         return { workspaces: [], total: 0 };
     }
 }
@@ -368,10 +368,10 @@ async function joinWorkspaceApi(workspaceId) {
         });
         
         const data = await response.json();
-        console.log('✅ Respuesta de join:', data);
+ console.log('Respuesta de join:', data);
         return data;
     } catch (error) {
-        console.error('Error en joinWorkspaceApi:', error);
+ console.error('Error en joinWorkspaceApi:', error);
         throw error;
     }
 }
@@ -416,7 +416,7 @@ async function sendMessageToApi(channelId, content, file = null) {
         }
         
         if (response.status === 403) {
-            console.warn('🚫 403 al enviar mensaje - posible expulsión');
+ console.warn('403 al enviar mensaje - posible expulsión');
             await handleForbidden(getActiveWorkspaceId());
             throw new Error('Has sido expulsado de este workspace');
         }
@@ -427,10 +427,10 @@ async function sendMessageToApi(channelId, content, file = null) {
         }
         
         const data = await response.json();
-        console.log('✅ Mensaje enviado:', data);
+ console.log('Mensaje enviado:', data);
         return data;
     } catch (error) {
-        console.error('Error en sendMessageToApi:', error);
+ console.error('Error en sendMessageToApi:', error);
         throw error;
     }
 }
@@ -443,7 +443,7 @@ async function editMessageApi(messageId, content) {
         });
         
         if (response.status === 403) {
-            console.warn('🚫 403 al editar mensaje - posible expulsión');
+ console.warn('403 al editar mensaje - posible expulsión');
             await handleForbidden(getActiveWorkspaceId());
             throw new Error('Has sido expulsado de este workspace');
         }
@@ -454,10 +454,10 @@ async function editMessageApi(messageId, content) {
         }
         
         const data = await response.json();
-        console.log('✅ Mensaje editado:', data);
+ console.log('Mensaje editado:', data);
         return data;
     } catch (error) {
-        console.error('Error en editMessageApi:', error);
+ console.error('Error en editMessageApi:', error);
         throw error;
     }
 }
@@ -469,7 +469,7 @@ async function deleteMessageApi(messageId) {
         });
         
         if (response.status === 403) {
-            console.warn('🚫 403 al eliminar mensaje - posible expulsión');
+ console.warn('403 al eliminar mensaje - posible expulsión');
             await handleForbidden(getActiveWorkspaceId());
             throw new Error('Has sido expulsado de este workspace');
         }
@@ -479,10 +479,10 @@ async function deleteMessageApi(messageId) {
             throw new Error(data.error || 'Error al eliminar mensaje');
         }
         
-        console.log('✅ Mensaje eliminado');
+ console.log('Mensaje eliminado');
         return response;
     } catch (error) {
-        console.error('Error en deleteMessageApi:', error);
+ console.error('Error en deleteMessageApi:', error);
         throw error;
     }
 }
@@ -495,7 +495,7 @@ async function kickMemberApi(userId) {
         });
         
         if (response.status === 403) {
-            console.warn('🚫 403 al expulsar - posible expulsión o sin permisos');
+ console.warn('403 al expulsar - posible expulsión o sin permisos');
             const data = await response.json();
             throw new Error(data.error || 'No tienes permisos para expulsar');
         }
@@ -506,10 +506,10 @@ async function kickMemberApi(userId) {
         }
         
         const data = await response.json();
-        console.log('✅ Usuario expulsado:', data);
+ console.log('Usuario expulsado:', data);
         return response;
     } catch (error) {
-        console.error('Error en kickMemberApi:', error);
+ console.error('Error en kickMemberApi:', error);
         throw error;
     }
 }
@@ -523,14 +523,14 @@ async function checkMembership(workspaceId) {
         const response = await apiFetch(`/api/chat/workspaces/${workspaceId}/members/me/`);
         
         if (!response || !response.ok) {
-            console.warn('⚠️ Error verificando membresía');
+ console.warn('Error verificando membresía');
             return false;
         }
         
         const data = await response.json();
         return data.is_member === true;
     } catch (error) {
-        console.error('Error en checkMembership:', error);
+ console.error('Error en checkMembership:', error);
         return false;
     }
 }
@@ -554,4 +554,4 @@ window.refreshToken = refreshToken;
 window.checkMembership = checkMembership;
 window.handleForbidden = handleForbidden;
 
-console.log('✅ API con autenticación cargada y detección instantánea de expulsión');
+console.log('API con autenticación cargada y detección instantánea de expulsión');

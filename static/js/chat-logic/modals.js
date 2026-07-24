@@ -43,7 +43,7 @@ window.openEditModal = function(messageId, content) {
     const textarea = document.getElementById('editMessageInput');
     
     if (!modal) {
-        console.warn('⚠️ editModal no encontrado');
+ console.warn('editModal no encontrado');
         return;
     }
     
@@ -188,7 +188,7 @@ window.openDeleteModal = function(messageId) {
     const modal = document.getElementById('deleteModal');
     
     if (!modal) {
-        console.warn('⚠️ deleteModal no encontrado');
+ console.warn('deleteModal no encontrado');
         return;
     }
     
@@ -348,13 +348,13 @@ window.closeKickProcessingModal = function() {
 window.abandonarWorkspace = function() {
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('⚠️ No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('⚠️ Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
@@ -363,7 +363,7 @@ window.abandonarWorkspace = function() {
     const currentUserId = currentUser?.id;
     
     if (currentUserId === ownerId) {
-        showToast('⚠️ Eres el owner, no puedes abandonar. Puedes eliminar el workspace.', 'warning');
+ showToast('Eres el owner, no puedes abandonar. Puedes eliminar el workspace.', 'warning');
         return;
     }
     
@@ -392,13 +392,13 @@ window.closeLeaveWorkspaceModal = function() {
 window.confirmarAbandonarWorkspace = async function() {
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('⚠️ No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('⚠️ Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
@@ -445,7 +445,7 @@ window.confirmarAbandonarWorkspace = async function() {
             throw new Error(data.error || 'Error al abandonar workspace');
         }
         
-        showToast(`Has abandonado "${workspaceName}"`, 'success');
+ showToast(`Has abandonado "${workspaceName}"`, 'success');
         
         await window.reloadWorkspaces();
         
@@ -513,8 +513,8 @@ window.confirmarAbandonarWorkspace = async function() {
             processingModal.style.display = 'none';
         }
         
-        console.error('❌ Error al abandonar workspace:', error);
-        showToast(`❌ Error: ${error.message}`, 'error');
+ console.error('Error al abandonar workspace:', error);
+ showToast(`Error: ${error.message}`, 'error');
     }
 };
 
@@ -525,13 +525,13 @@ window.confirmarAbandonarWorkspace = async function() {
 window.eliminarWorkspace = function() {
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('⚠️ No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('⚠️ Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
@@ -540,7 +540,7 @@ window.eliminarWorkspace = function() {
     const currentUserId = currentUser?.id;
     
     if (currentUserId !== ownerId) {
-        showToast('⚠️ Solo el owner puede eliminar el workspace', 'error');
+ showToast('Solo el owner puede eliminar el workspace', 'error');
         return;
     }
     
@@ -569,13 +569,13 @@ window.closeDeleteWorkspaceModal = function() {
 window.confirmarEliminarWorkspace = async function() {
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('⚠️ No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('⚠️ Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
@@ -616,7 +616,7 @@ window.confirmarEliminarWorkspace = async function() {
             throw new Error(data.error || 'Error al eliminar workspace');
         }
         
-        showToast(`Has eliminado "${workspaceName}"`, 'success');
+ showToast(`Has eliminado "${workspaceName}"`, 'success');
         
         setWorkspaces([]);
         
@@ -680,7 +680,7 @@ window.confirmarEliminarWorkspace = async function() {
         
         try {
             const freshWorkspaces = await window.fetchWorkspaces();
-            console.log('📋 Workspaces después de eliminar:', freshWorkspaces);
+ console.log('Workspaces después de eliminar:', freshWorkspaces);
             
             if (Array.isArray(freshWorkspaces) && freshWorkspaces.length > 0) {
                 setWorkspaces(freshWorkspaces);
@@ -706,7 +706,7 @@ window.confirmarEliminarWorkspace = async function() {
                 }
             }
         } catch (error) {
-            console.error('❌ Error recargando workspaces:', error);
+ console.error('Error recargando workspaces:', error);
             window.location.reload();
         }
         
@@ -716,8 +716,8 @@ window.confirmarEliminarWorkspace = async function() {
             processingModal.style.display = 'none';
         }
         
-        console.error('❌ Error al eliminar workspace:', error);
-        showToast(`❌ Error: ${error.message}`, 'error');
+ console.error('Error al eliminar workspace:', error);
+ showToast(`Error: ${error.message}`, 'error');
     }
 };
 
@@ -728,13 +728,13 @@ window.confirmarEliminarWorkspace = async function() {
 window.editarWorkspace = function() {
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('⚠️ No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('⚠️ Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
@@ -743,7 +743,7 @@ window.editarWorkspace = function() {
     const currentUserId = currentUser?.id;
     
     if (currentUserId !== ownerId) {
-        showToast('⚠️ Solo el owner puede editar el workspace', 'error');
+ showToast('Solo el owner puede editar el workspace', 'error');
         return;
     }
     
@@ -782,13 +782,13 @@ window.closeEditWorkspaceModal = function() {
 window.confirmarEditarWorkspace = async function() {
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('⚠️ No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('⚠️ Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
@@ -799,13 +799,13 @@ window.confirmarEditarWorkspace = async function() {
     const description = descInput ? descInput.value.trim() : '';
     
     if (!name) {
-        showToast('⚠️ El nombre no puede estar vacío', 'warning');
+ showToast('El nombre no puede estar vacío', 'warning');
         return;
     }
     
     window.closeEditWorkspaceModal();
     
-    showToast('⏳ Actualizando workspace...', 'info');
+ showToast('⏳ Actualizando workspace...', 'info');
     
     try {
         const token = localStorage.getItem('access_token');
@@ -829,9 +829,9 @@ window.confirmarEditarWorkspace = async function() {
         }
         
         const data = await response.json();
-        console.log(' Workspace actualizado:', data);
+ console.log(' Workspace actualizado:', data);
         
-        showToast(` Workspace actualizado a "${name}"`, 'success');
+ showToast(` Workspace actualizado a "${name}"`, 'success');
         
         const currentWorkspaces = getWorkspaces();
         const updatedWorkspaces = currentWorkspaces.map(w => {
@@ -850,8 +850,8 @@ window.confirmarEditarWorkspace = async function() {
         updateHeader(updatedWorkspace, null);
         
     } catch (error) {
-        console.error('❌ Error al actualizar workspace:', error);
-        showToast(`❌ Error: ${error.message}`, 'error');
+ console.error('Error al actualizar workspace:', error);
+ showToast(`Error: ${error.message}`, 'error');
     }
 };
 
@@ -864,13 +864,13 @@ let canalesCache = [];
 window.editarCanales = async function() {
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('⚠️ No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('⚠️ Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
@@ -882,7 +882,7 @@ window.editarCanales = async function() {
         const members = await fetchWorkspaceMembers(workspaceId);
         const userMember = members.members?.find(m => m.user?.id === currentUserId);
         if (!userMember || (userMember.role !== 'owner' && userMember.role !== 'admin')) {
-            showToast('⚠️ Solo el owner o admin pueden editar canales', 'error');
+ showToast('Solo el owner o admin pueden editar canales', 'error');
             return;
         }
     }
@@ -920,8 +920,8 @@ window.editarCanales = async function() {
         }
         
     } catch (error) {
-        console.error('❌ Error al cargar canales:', error);
-        showToast('❌ Error al cargar canales', 'error');
+ console.error('Error al cargar canales:', error);
+ showToast('Error al cargar canales', 'error');
     }
 };
 
@@ -957,7 +957,7 @@ window.confirmarEditarCanal = async function() {
     const channelId = select.value;
     
     if (!channelId) {
-        showToast('⚠️ Selecciona un canal', 'warning');
+ showToast('Selecciona un canal', 'warning');
         return;
     }
     
@@ -968,13 +968,13 @@ window.confirmarEditarCanal = async function() {
     const description = descInput ? descInput.value.trim() : '';
     
     if (!name) {
-        showToast('⚠️ El nombre del canal no puede estar vacío', 'warning');
+ showToast('El nombre del canal no puede estar vacío', 'warning');
         return;
     }
     
     window.closeEditChannelsModal();
     
-    showToast('⏳ Actualizando canal...', 'info');
+ showToast('⏳ Actualizando canal...', 'info');
     
     try {
         const token = localStorage.getItem('access_token');
@@ -999,9 +999,9 @@ window.confirmarEditarCanal = async function() {
         }
         
         const data = await response.json();
-        console.log(' Canal actualizado:', data);
+ console.log(' Canal actualizado:', data);
         
-        showToast(` Canal actualizado a "${name}"`, 'success');
+ showToast(` Canal actualizado a "${name}"`, 'success');
         
         const channels = await fetchChannels(workspaceId);
         renderChannels(channels);
@@ -1013,8 +1013,8 @@ window.confirmarEditarCanal = async function() {
         }
         
     } catch (error) {
-        console.error('❌ Error al actualizar canal:', error);
-        showToast(`❌ Error: ${error.message}`, 'error');
+ console.error('Error al actualizar canal:', error);
+ showToast(`Error: ${error.message}`, 'error');
     }
 };
 
@@ -1179,13 +1179,13 @@ window.confirmarCrearWorkspace = async function() {
     const description = descInput ? descInput.value.trim() : '';
     
     if (!name) {
-        showToast('⚠️ El nombre del workspace es requerido', 'warning');
+ showToast('El nombre del workspace es requerido', 'warning');
         return;
     }
     
     window.cerrarCrearWorkspace();
     
-    showToast('⏳ Creando workspace...', 'info');
+ showToast('⏳ Creando workspace...', 'info');
     
     try {
         const token = localStorage.getItem('access_token');
@@ -1209,9 +1209,9 @@ window.confirmarCrearWorkspace = async function() {
         }
         
         const data = await response.json();
-        console.log(' Workspace creado:', data);
+ console.log(' Workspace creado:', data);
         
-        showToast(` Workspace "${name}" creado`, 'success');
+ showToast(` Workspace "${name}" creado`, 'success');
         
         await window.reloadWorkspaces();
         
@@ -1220,8 +1220,8 @@ window.confirmarCrearWorkspace = async function() {
         }
         
     } catch (error) {
-        console.error('❌ Error al crear workspace:', error);
-        showToast(`❌ Error: ${error.message}`, 'error');
+ console.error('Error al crear workspace:', error);
+ showToast(`Error: ${error.message}`, 'error');
     }
 };
 
@@ -1232,13 +1232,13 @@ window.confirmarCrearWorkspace = async function() {
 window.crearCanal = function() {
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('⚠️ Selecciona un workspace primero', 'warning');
+ showToast('Selecciona un workspace primero', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('⚠️ Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
@@ -1426,19 +1426,19 @@ window.confirmarCrearCanal = async function() {
     const description = descInput ? descInput.value.trim() : '';
     
     if (!name) {
-        showToast('⚠️ El nombre del canal es requerido', 'warning');
+ showToast('El nombre del canal es requerido', 'warning');
         return;
     }
     
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('⚠️ No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     window.cerrarCrearCanal();
     
-    showToast('⏳ Creando canal...', 'info');
+ showToast('⏳ Creando canal...', 'info');
     
     try {
         const token = localStorage.getItem('access_token');
@@ -1462,9 +1462,9 @@ window.confirmarCrearCanal = async function() {
         }
         
         const data = await response.json();
-        console.log(' Canal creado:', data);
+ console.log(' Canal creado:', data);
         
-        showToast(` Canal "${name}" creado`, 'success');
+ showToast(` Canal "${name}" creado`, 'success');
         
         const channels = await fetchChannels(workspaceId);
         if (typeof window.renderChannels === 'function') {
@@ -1476,8 +1476,8 @@ window.confirmarCrearCanal = async function() {
         }
         
     } catch (error) {
-        console.error('❌ Error al crear canal:', error);
-        showToast(`❌ Error: ${error.message}`, 'error');
+ console.error('Error al crear canal:', error);
+ showToast(`Error: ${error.message}`, 'error');
     }
 };
 
@@ -1513,7 +1513,7 @@ window.setupModalKeyListeners = function() {
     });
 };
 
-console.log('✅ Modals cargado');
+console.log('Modals cargado');
 
 // static/js/chat-logic/modals.js
 
@@ -1542,13 +1542,13 @@ let canalAEliminar = null;
 window.eliminarCanales = async function() {
     const workspaceId = getActiveWorkspaceId();
     if (!workspaceId) {
-        showToast('No hay workspace seleccionado', 'warning');
+ showToast('No hay workspace seleccionado', 'warning');
         return;
     }
     
     const workspace = getActiveWorkspace();
     if (!workspace) {
-        showToast('Workspace no encontrado', 'error');
+ showToast('Workspace no encontrado', 'error');
         return;
     }
     
@@ -1560,7 +1560,7 @@ window.eliminarCanales = async function() {
         const members = await fetchWorkspaceMembers(workspaceId);
         const userMember = members.members?.find(m => m.user?.id === currentUserId);
         if (!userMember || (userMember.role !== 'owner' && userMember.role !== 'admin')) {
-            showToast('Solo el owner o admin pueden eliminar canales', 'error');
+ showToast('Solo el owner o admin pueden eliminar canales', 'error');
             return;
         }
     }
@@ -1622,8 +1622,8 @@ window.eliminarCanales = async function() {
         }
         
     } catch (error) {
-        console.error('Error al cargar canales:', error);
-        showToast('Error al cargar canales', 'error');
+ console.error('Error al cargar canales:', error);
+ showToast('Error al cargar canales', 'error');
     }
 };
 
@@ -1648,13 +1648,13 @@ window.confirmarEliminarCanal = function() {
     const channelId = select?.value;
     
     if (!channelId) {
-        showToast('Selecciona un canal', 'warning');
+ showToast('Selecciona un canal', 'warning');
         return;
     }
     
     const channel = canalesEliminarCache.find(c => c.id === channelId);
     if (!channel) {
-        showToast('Canal no encontrado', 'error');
+ showToast('Canal no encontrado', 'error');
         return;
     }
     
@@ -1707,7 +1707,7 @@ window.closeConfirmDeleteChannelModal = function() {
 
 window.confirmarEliminarCanalDefinitivo = async function() {
     if (!canalAEliminar) {
-        showToast('Error: no hay canal seleccionado', 'error');
+ showToast('Error: no hay canal seleccionado', 'error');
         return;
     }
     
@@ -1748,7 +1748,7 @@ window.confirmarEliminarCanalDefinitivo = async function() {
             throw new Error(data.error || data.message || 'Error al eliminar canal');
         }
         
-        showToast('Canal "' + channelName + '" eliminado', 'success');
+ showToast('Canal "' + channelName + '" eliminado', 'success');
         
         const channels = await fetchChannels(workspaceId);
         if (typeof window.renderChannels === 'function') {
@@ -1782,8 +1782,8 @@ window.confirmarEliminarCanalDefinitivo = async function() {
         if (processingModal) {
             processingModal.style.display = 'none';
         }
-        console.error('Error al eliminar canal:', error);
-        showToast('Error: ' + error.message, 'error');
+ console.error('Error al eliminar canal:', error);
+ showToast('Error: ' + error.message, 'error');
     }
     
     canalAEliminar = null;
@@ -1870,7 +1870,7 @@ window.confirmPromote = async function() {
         window.closePromoteModal();
         
         // Mostrar éxito
-        showToast('✅ Usuario ascendido a ADMIN exitosamente', 'success');
+ showToast('Usuario ascendido a ADMIN exitosamente', 'success');
         
         // Recargar lista de miembros
         const workspaceId = promoteData.workspaceId;
@@ -1887,8 +1887,8 @@ window.confirmPromote = async function() {
             confirmBtn.textContent = 'Confirmar';
         }
         
-        showToast('❌ Error: ' + (error.message || 'Error al ascender a admin'), 'error');
-        console.error('Error al ascender:', error);
+ showToast('Error: ' + (error.message || 'Error al ascender a admin'), 'error');
+ console.error('Error al ascender:', error);
     }
 };
 
@@ -1977,9 +1977,9 @@ window.confirmRevert = async function() {
         window.closeRevertModal();
         
         if (typeof showToast === 'function') {
-            showToast('✅ Usuario revertido a MEMBER exitosamente', 'success');
+ showToast('Usuario revertido a MEMBER exitosamente', 'success');
         } else {
-            alert('✅ Usuario revertido a MEMBER exitosamente');
+ alert('Usuario revertido a MEMBER exitosamente');
         }
         
         const workspaceId = revertData.workspaceId;
@@ -1998,10 +1998,10 @@ window.confirmRevert = async function() {
         }
         
         if (typeof showToast === 'function') {
-            showToast('❌ Error: ' + (error.message || 'Error al revertir'), 'error');
+ showToast('Error: ' + (error.message || 'Error al revertir'), 'error');
         } else {
-            alert('❌ Error: ' + (error.message || 'Error al revertir'));
+ alert('Error: ' + (error.message || 'Error al revertir'));
         }
-        console.error('Error al revertir:', error);
+ console.error('Error al revertir:', error);
     }
 };

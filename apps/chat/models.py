@@ -78,7 +78,7 @@ class WorkspaceMember(BaseModel):
         default=Role.MEMBER,
     )
     
-    # 🔥 NUEVOS CAMPOS PARA INVITACIONES
+    # NUEVOS CAMPOS PARA INVITACIONES
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
@@ -113,7 +113,7 @@ class WorkspaceMember(BaseModel):
                 fields=["workspace", "user"],
                 name="unique_workspace_member",
             ),
-            # ✅ ELIMINADO: MySQL no soporta condition
+            # ELIMINADO: MySQL no soporta condition
         ]
         indexes = [
             models.Index(fields=["status"]),

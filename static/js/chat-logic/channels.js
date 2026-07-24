@@ -10,7 +10,7 @@
 // ============================================================
 
 window.selectChannel = async function(channelId) {
-    console.log('📋 selectChannel llamado:', channelId);
+ console.log('selectChannel llamado:', channelId);
     
     if (getActiveChannelId() === channelId) return;
     
@@ -57,7 +57,7 @@ window.selectChannel = async function(channelId) {
             }, 100);
         }
     } catch (error) {
-        console.error('❌ Error al cargar mensajes:', error);
+ console.error('Error al cargar mensajes:', error);
     }
 };
 
@@ -65,4 +65,4 @@ window.selectChannel = async function(channelId) {
 // EXPONER FUNCIONES GLOBALES
 // ============================================================
 
-console.log('✅ Channels cargado');
+console.log('Channels cargado');

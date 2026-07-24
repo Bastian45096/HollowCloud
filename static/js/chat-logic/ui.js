@@ -5,15 +5,15 @@
 // ============================================================
 
 window.renderWorkspaces = function() {
-    console.log('📋 renderWorkspaces llamado');
+ console.log('renderWorkspaces llamado');
     const container = document.getElementById('workspaceList');
     if (!container) {
-        console.warn('⚠️ workspaceList no encontrado');
+ console.warn('workspaceList no encontrado');
         return;
     }
     
     const workspaces = getWorkspaces() || [];
-    console.log('📋 Renderizando workspaces:', workspaces.length);
+ console.log('Renderizando workspaces:', workspaces.length);
     
     if (!Array.isArray(workspaces) || workspaces.length === 0) {
         container.innerHTML = `
@@ -99,10 +99,10 @@ window.renderWorkspaces = function() {
 
 
 window.renderChannels = function(channels) {
-    console.log('📋 renderChannels llamado');
+ console.log('renderChannels llamado');
     const container = document.getElementById('channelItems');
     if (!container) {
-        console.warn('⚠️ channelItems no encontrado');
+ console.warn('channelItems no encontrado');
         return;
     }
     
@@ -166,16 +166,16 @@ window.renderChannels = function(channels) {
 // ============================================================
 
 window.renderWorkspaceMembers = function(membersData, workspace) {
-    console.log('renderWorkspaceMembers llamado');
+ console.log('renderWorkspaceMembers llamado');
     const container = document.getElementById('workspaceMembers');
     if (!container) {
-        console.warn('workspaceMembers no encontrado');
+ console.warn('workspaceMembers no encontrado');
         return;
     }
     
-    // ✅ SI membersData es null o undefined
+    // SI membersData es null o undefined
     if (!membersData) {
-        console.warn('⚠️ membersData es null o undefined');
+ console.warn('membersData es null o undefined');
         container.innerHTML = `
             <div style="padding: 8px 12px; color: var(--text-muted); font-size: 0.8rem; font-family: 'Ubuntu Mono', 'Courier New', monospace;">
                 No hay miembros
@@ -184,7 +184,7 @@ window.renderWorkspaceMembers = function(membersData, workspace) {
         return;
     }
     
-    // ✅ SIN FILTRO DE STATUS - MOSTRAR TODOS LOS MIEMBROS
+    // SIN FILTRO DE STATUS - MOSTRAR TODOS LOS MIEMBROS
     const members = membersData.members || [];
     const count = members.length;
     
@@ -405,10 +405,10 @@ window.renderWorkspaceMembers = function(membersData, workspace) {
 // ============================================================
 
 window.renderMessages = async function(messages) {
-    console.log('📋 renderMessages llamado');
+ console.log('renderMessages llamado');
     const container = document.getElementById('messagesArea');
     if (!container) {
-        console.warn('⚠️ messagesArea no encontrado');
+ console.warn('messagesArea no encontrado');
         return;
     }
     
@@ -461,7 +461,7 @@ window.renderMessages = async function(messages) {
             }
         }
     } catch (error) {
-        console.error('❌ Error obteniendo membresía:', error);
+ console.error('Error obteniendo membresía:', error);
     }
     
     container.innerHTML = messages.map((message) => {
@@ -610,7 +610,7 @@ window.renderMessages = async function(messages) {
             `;
         }
         
-        // ✅ Icono de eliminar (tacho de basura SVG personalizado)
+        // Icono de eliminar (tacho de basura SVG personalizado)
         const deleteIcon = `
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6h14z" 
@@ -718,7 +718,7 @@ window.renderMessages = async function(messages) {
 // ============================================================
 
 window.previewImage = function(imageUrl, fileName) {
-    console.log('🖼️ Previsualizando imagen:', fileName);
+ console.log('🖼️ Previsualizando imagen:', fileName);
     
     // Remover modal anterior si existe
     const oldModal = document.getElementById('imagePreviewModal');
@@ -886,7 +886,7 @@ function getFileIcon(fileName) {
 // ============================================================
 
 window.updateHeader = function(workspace, channel) {
-    console.log('📋 updateHeader:', workspace?.name, channel?.name);
+ console.log('updateHeader:', workspace?.name, channel?.name);
     const nameEl = document.getElementById('workspaceName');
     const descEl = document.getElementById('workspaceDescription');
     const titleEl = document.getElementById('channelTitle');
@@ -940,4 +940,4 @@ window.renderMessages = window.renderMessages || renderMessages;
 window.renderWorkspaceMembers = window.renderWorkspaceMembers || renderWorkspaceMembers;
 window.updateHeader = window.updateHeader || updateHeader;
 
-console.log('✅ UI cargado');
+console.log('UI cargado');

@@ -326,7 +326,7 @@ def remove_member_from_workspace(
         invalidate_user_workspaces_cache(user_id=user_id)
         invalidate_user_workspaces_cache(user_id=removed_by.id)
         
-        # 🔥 ENVIAR NOTIFICACIÓN A OWNERS Y ADMINS (si no es auto-eliminación o siempre)
+        # ENVIAR NOTIFICACIÓN A OWNERS Y ADMINS (si no es auto-eliminación o siempre)
         if is_self_removal:
             # El usuario abandonó el workspace
             from apps.notifications.services import notify_user_left_workspace_to_admins
@@ -776,7 +776,7 @@ def invite_member_to_workspace(
     if not user_to_invite:
         raise ValidationError(f"No existe un usuario con el email {email}")
 
-    # 4. 🔥 VERIFICAR QUE EL USUARIO NO TENGA UNA INVITACIÓN PENDIENTE
+    # 4. VERIFICAR QUE EL USUARIO NO TENGA UNA INVITACIÓN PENDIENTE
     if WorkspaceMember.objects.filter(
         workspace=workspace,
         user=user_to_invite,

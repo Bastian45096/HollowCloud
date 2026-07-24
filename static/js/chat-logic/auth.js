@@ -30,7 +30,7 @@ async function fetchCurrentUser() {
     try {
         const token = getToken();
         if (!token) {
-            console.warn('⚠️ No hay token');
+ console.warn('No hay token');
             return null;
         }
         
@@ -43,7 +43,7 @@ async function fetchCurrentUser() {
         });
         
         if (response.status === 404) {
-            console.warn('⚠️ Endpoint /api/accounts/me/ no encontrado, continuando sin usuario');
+ console.warn('Endpoint /api/accounts/me/ no encontrado, continuando sin usuario');
             //  No fallar, solo continuar
             return null;
         }
@@ -62,10 +62,10 @@ async function fetchCurrentUser() {
         }
         
         const data = await response.json();
-        console.log('👤 Usuario actual:', data);
+ console.log('Usuario actual:', data);
         return data;
     } catch (error) {
-        console.warn('⚠️ No se pudo obtener el usuario:', error.message);
+ console.warn('No se pudo obtener el usuario:', error.message);
         return null;
     }
 }
@@ -77,9 +77,9 @@ async function fetchCurrentUser() {
 (function checkAuth() {
     const token = getToken();
     if (token) {
-        console.log('✅ Token encontrado en localStorage');
+ console.log('Token encontrado en localStorage');
     } else {
-        console.log('⚠️ No hay token en localStorage');
+ console.log('No hay token en localStorage');
     }
 })();
 
@@ -93,4 +93,4 @@ window.isAuthenticated = isAuthenticated;
 window.logout = logout;
 window.fetchCurrentUser = fetchCurrentUser;
 
-console.log('✅ Auth cargado');
+console.log('Auth cargado');

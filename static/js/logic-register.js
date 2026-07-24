@@ -17,21 +17,21 @@ let isCropped = false;
 // ============================================================
 
 function showLoadingModal() {
-    console.log('🔵 showLoadingModal() ejecutado');
+ console.log('🔵 showLoadingModal() ejecutado');
 
     const modal = document.getElementById('loadingModal');
     const progressFill = document.getElementById('progressFill');
 
-    console.log('🔵 modal encontrado:', modal);
+ console.log('🔵 modal encontrado:', modal);
 
     if (!modal) {
-        console.error('❌ Modal NO encontrado en el DOM');
+ console.error('Modal NO encontrado en el DOM');
         return;
     }
 
     // Mostrar modal
     modal.style.display = 'flex';
-    console.log('🔵 Modal mostrado (display: flex)');
+ console.log('🔵 Modal mostrado (display: flex)');
 
     // Resetear barra de progreso
     progressFill.style.width = '0%';
@@ -52,13 +52,13 @@ function showLoadingModal() {
 }
 
 function hideLoadingModal() {
-    console.log('🔴 hideLoadingModal() ejecutado');
+ console.log('🔴 hideLoadingModal() ejecutado');
 
     const modal = document.getElementById('loadingModal');
     const progressFill = document.getElementById('progressFill');
 
     if (!modal) {
-        console.error('❌ Modal NO encontrado en el DOM');
+ console.error('Modal NO encontrado en el DOM');
         return;
     }
 
@@ -75,12 +75,12 @@ function hideLoadingModal() {
     setTimeout(() => {
         modal.style.display = 'none';
         progressFill.style.width = '0%';
-        console.log('🔴 Modal ocultado');
+ console.log('🔴 Modal ocultado');
     }, 500);
 }
 
 function updateModalText(message) {
-    console.log('🟡 updateModalText:', message);
+ console.log('🟡 updateModalText:', message);
     const textElement = document.getElementById('modalText');
     if (textElement) {
         textElement.textContent = message;
@@ -102,7 +102,7 @@ function showFieldError(fieldId, message) {
 
 // Función para mostrar error general
 function showError(message) {
-    errorMsg.textContent = '❌ ' + message;
+    errorMsg.textContent = message;
     errorMsg.classList.add('show');
     successMsg.classList.remove('show');
 }
@@ -364,7 +364,7 @@ document.getElementById('password_confirm').addEventListener('input', function (
 form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    console.log('🟢 Formulario enviado - mostrando modal');
+ console.log('Formulario enviado - mostrando modal');
 
     // Resetear mensajes
     errorMsg.classList.remove('show');
@@ -461,7 +461,7 @@ form.addEventListener('submit', async function (e) {
         // Actualizar texto del modal
         updateModalText('Enviando tus datos...');
 
-        console.log('🟢 Enviando petición a /api/APIVIEWCRTA/');
+ console.log('Enviando petición a /api/APIVIEWCRTA/');
 
         const response = await fetch('/api/APIVIEWCRTA/', {
             method: 'POST',
@@ -469,7 +469,7 @@ form.addEventListener('submit', async function (e) {
         });
 
         const data = await response.json();
-        console.log('🟢 Respuesta recibida:', data);
+ console.log('Respuesta recibida:', data);
 
         if (response.ok) {
             // Éxito - actualizar modal
@@ -530,7 +530,7 @@ form.addEventListener('submit', async function (e) {
     } catch (err) {
         hideLoadingModal();
         showError('Error de conexión. Verifica tu conexión a internet.');
-        console.error('Error:', err);
+ console.error('Error:', err);
     } finally {
         btn.disabled = false;
         btn.innerHTML = 'Crear cuenta';

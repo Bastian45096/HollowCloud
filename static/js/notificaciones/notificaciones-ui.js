@@ -25,7 +25,7 @@ function getTimeAgo(dateString) {
 // ============================================================
 
 function getNotificationIcon(type, extraData = {}) {
-    // 🔥 NUEVO: BIENVENIDA
+    // NUEVO: BIENVENIDA
     if (extraData && extraData.type === 'welcome') {
         return `
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 28px; height: 28px; display: block; flex-shrink: 0;">
@@ -64,7 +64,7 @@ function getNotificationIcon(type, extraData = {}) {
         `;
     }
     
-    // 🔥 SI ES ABANDONO DE WORKSPACE
+    // SI ES ABANDONO DE WORKSPACE
     if (extraData && extraData.type === 'user_left_workspace') {
         return `
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 28px; height: 28px; display: block; flex-shrink: 0;">
@@ -100,7 +100,7 @@ function getNotificationIcon(type, extraData = {}) {
         `;
     }
     
-    // 🔥 SI ES INVITACIÓN
+    // SI ES INVITACIÓN
     if (extraData && extraData.type === 'workspace_invite') {
         return `
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 28px; height: 28px; display: block; flex-shrink: 0;">
@@ -351,14 +351,14 @@ function showError(errorMessage) {
 // ============================================================
 
 async function loadNotifications() {
-    console.log('🔄 loadNotifications ejecutado');
+ console.log('🔄 loadNotifications ejecutado');
     showLoading();
     try {
         const data = await fetchNotifications();
-        console.log('📦 Notificaciones:', data);
+ console.log('📦 Notificaciones:', data);
         renderNotifications(data.notifications || [], data.unread_count || 0);
     } catch (error) {
-        console.error('❌ Error loading notifications:', error);
+ console.error('Error loading notifications:', error);
         showError(error.message);
     }
 }
@@ -370,7 +370,7 @@ window.loadNotifications = loadNotifications;
 // ============================================================
 
 window.markAsRead = async function(notificationId) {
-    console.log('📌 markAsRead - notificationId:', notificationId);
+ console.log('📌 markAsRead - notificationId:', notificationId);
     
     try {
         const token = localStorage.getItem('access_token');
@@ -392,12 +392,12 @@ window.markAsRead = async function(notificationId) {
         }
         
     } catch (error) {
-        console.error('❌ Error al marcar como leída:', error);
+ console.error('Error al marcar como leída:', error);
     }
 };
 
 window.deleteNotification = async function(notificationId) {
-    console.log('🗑️ deleteNotification - notificationId:', notificationId);
+ console.log('🗑️ deleteNotification - notificationId:', notificationId);
     
     try {
         const token = localStorage.getItem('access_token');
@@ -419,8 +419,8 @@ window.deleteNotification = async function(notificationId) {
         }
         
     } catch (error) {
-        console.error('❌ Error al eliminar notificación:', error);
+ console.error('Error al eliminar notificación:', error);
     }
 };
 
-console.log('✅ Notifications UI cargado');
+console.log('Notifications UI cargado');

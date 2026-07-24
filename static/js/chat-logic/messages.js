@@ -18,4 +18,4 @@
 // deleteMessageApi está en api.js
 // renderMessages está en ui.js
 
-console.log('✅ Messages cargado');
+console.log('Messages cargado');

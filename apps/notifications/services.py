@@ -682,7 +682,7 @@ def notify_user_left_workspace_to_admins(
     
     title = f"Usuario abandonó el workspace"
     
-    # 🔥 DATOS PARA EL ICONO Y LA NOTIFICACIÓN
+    # DATOS PARA EL ICONO Y LA NOTIFICACIÓN
     message_data = {
         'text': (
             f"El usuario {user_name} ha abandonado el workspace {workspace.name}.\n\n"
