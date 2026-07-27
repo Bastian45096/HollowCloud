@@ -5,7 +5,7 @@ from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class ChatDashboardView(LoginRequiredMixin, View):
+class ChatDashboardView(View):
     """Vista principal del chat - solo sirve el HTML, todo lo demás lo hace JS"""
     template_name = 'chat/dashboard.html'
 
@@ -20,7 +20,7 @@ class ChatDashboardView(LoginRequiredMixin, View):
 #         return render(request, self.template_name)
 
 
-class WorkspaceView(LoginRequiredMixin, View):
+class WorkspaceView(View):
     """Vista de un workspace específico"""
     template_name = 'chat/dashboard.html'
 
@@ -35,7 +35,7 @@ class WorkspaceView(LoginRequiredMixin, View):
 #         return render(request, self.template_name, {'workspace_id': workspace_id})
 
 
-class ChannelView(LoginRequiredMixin, View):
+class ChannelView(View):
     """Vista de un canal específico"""
     template_name = 'chat/dashboard.html'
 

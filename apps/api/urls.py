@@ -35,6 +35,14 @@ from apps.notifications.endpoints import (
 
 )
 
+from apps.storage.endpoints import (
+    StorageContentView,
+    CreateFolderView,
+    UploadFileView,
+    UpdateFileVersionView,
+    ReplaceFileView,
+)
+
 urlpatterns = [
     # AUTH (JWT)
     path("auth/login/", TokenObtainPairView.as_view(), name="login"),
@@ -79,5 +87,14 @@ urlpatterns = [
     path('notifications/<uuid:notification_id>/', NotificationDetailView.as_view(), name='notification-detail'),
     path('notifications/preferences/', NotificationPreferenceView.as_view(), name='notification-preference'),
     path('notifications/summary/', NotificationSummaryView.as_view(), name='notification-summary'),
-    path('notifications/<uuid:notification_id>/read/', NotificationMarkSingleReadView.as_view(), name='notification-mark-single-read'),    
+    path('notifications/<uuid:notification_id>/read/', NotificationMarkSingleReadView.as_view(), name='notification-mark-single-read'),   
+
+
+
+    #Storage Api
+    path('storage/<uuid:workspace_id>/items/', StorageContentView.as_view(), name='storage-content'),
+    path('storage/<uuid:workspace_id>/folders/', CreateFolderView.as_view(), name='create-folder'),
+    path('storage/<uuid:workspace_id>/upload/', UploadFileView.as_view(), name='upload-file'),
+    path('storage/<uuid:workspace_id>/files/<uuid:file_id>/versions/', UpdateFileVersionView.as_view(), name='update-file-version'),
+    path('storage/<uuid:workspace_id>/files/<uuid:file_id>/replace/', ReplaceFileView.as_view(), name='replace-file'),
 ]

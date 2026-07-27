@@ -1,6 +1,7 @@
 # apps/chat/urls.py
 
 from django.urls import path
+from django.views.generic import RedirectView
 from .web_views import (
     ChatDashboardView,
     WorkspaceView,
@@ -8,15 +9,13 @@ from .web_views import (
 )
 
 urlpatterns = [
+    # Opción A: Redirigir /chat/ -> /chat/dashboard/ (Recomendado para evitar conflictos)
+    path('', RedirectView.as_view(url='dashboard/', permanent=False)),
     
-    # Dashboard
-    path('', ChatDashboardView.as_view(), name='chat_dashboard'),
+    # Opción B: El Dashboard ahora vive explícitamente en /chat/dashboard/
+    path('dashboard/', ChatDashboardView.as_view(), name='chat_dashboard'),
     
-    # Workspace views
-    
+    # Workspaces y Canales
     path('workspaces/<uuid:workspace_id>/', WorkspaceView.as_view(), name='chat_workspace'), 
-    
-    # Channel views
-    
     path('workspaces/<uuid:workspace_id>/channels/<uuid:channel_id>/', ChannelView.as_view(), name='chat_channel'),
 ]

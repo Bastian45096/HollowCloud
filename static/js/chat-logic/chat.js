@@ -16,11 +16,23 @@ window.selectWorkspace = async function(workspaceId) {
     try {
         await fetchAndSetUserRole(workspaceId);
     } catch (error) {
- console.warn('No se pudo obtener el rol:', error);
+        console.warn('No se pudo obtener el rol:', error);
     }
     
     const workspace = getActiveWorkspace();
     updateHeader(workspace, null);
+
+    // 🔥 ACTUALIZAR ENLACE DE STORAGE AUTOMÁTICAMENTE
+    const storageBtn = document.getElementById('btn-storage-link');
+    if (storageBtn && workspaceId) {
+        storageBtn.href = `/storage/${workspaceId}/`;
+        storageBtn.style.pointerEvents = 'auto'; // Habilitar clicks
+        storageBtn.style.opacity = '1';          // Hacer visible
+    } else if (storageBtn) {
+        storageBtn.href = '#'; // Deshabilitar si no hay workspace
+        storageBtn.style.pointerEvents = 'none';
+        storageBtn.style.opacity = '0.5';
+    }
     
     if (typeof window.renderWorkspaces === 'function') {
         window.renderWorkspaces();
@@ -37,7 +49,7 @@ window.selectWorkspace = async function(workspaceId) {
             renderChannelsFallback(channels);
         }
     } catch (error) {
- console.warn('No se pudieron cargar canales:', error);
+        console.warn('No se pudieron cargar canales:', error);
         document.getElementById('channelItems').innerHTML = 
             '<div style="padding: 8px 12px; color: var(--text-muted); font-size: 0.8rem; font-family: \'Ubuntu Mono\', \'Courier New\', monospace;">Error al cargar canales</div>';
         channels = [];
@@ -51,7 +63,7 @@ window.selectWorkspace = async function(workspaceId) {
             renderWorkspaceMembersFallback(members, workspace);
         }
     } catch (error) {
- console.warn('No se pudieron cargar miembros:', error);
+        console.warn('No se pudieron cargar miembros:', error);
     }
 
     const area = document.getElementById('messagesArea');
@@ -109,19 +121,19 @@ window.selectWorkspace = async function(workspaceId) {
             userRole = userMember.role || 'member';
         }
     } catch (e) {
- console.warn('No se pudo obtener el rol del usuario:', e);
+        console.warn('No se pudo obtener el rol del usuario:', e);
     }
     
     const isOwner = currentUserId === ownerId;
-    const isAdmin = userRole === 'admin'
+    const isAdmin = userRole === 'admin';
     const hasChannels = channels && channels.length > 0;
     
- console.log('Usuario actual ID:', currentUserId);
- console.log('Owner ID:', ownerId);
- console.log('Es owner?', isOwner);
- console.log('Es admin?', isAdmin);
- console.log('Rol:', userRole);
- console.log('Tiene canales?', hasChannels, 'Cantidad:', channels?.length || 0);
+    console.log('Usuario actual ID:', currentUserId);
+    console.log('Owner ID:', ownerId);
+    console.log('Es owner?', isOwner);
+    console.log('Es admin?', isAdmin);
+    console.log('Rol:', userRole);
+    console.log('Tiene canales?', hasChannels, 'Cantidad:', channels?.length || 0);
     
     if (workspaceId && isOwner) {
         // Owner: mostrar Editar Workspace, Eliminar Workspace

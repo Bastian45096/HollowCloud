@@ -13,7 +13,7 @@ from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class NotificationView(LoginRequiredMixin, View):
+class NotificationView(View):
     """
     Vista principal de notificaciones.
     Renderiza el HTML con la lista de notificaciones del usuario.
